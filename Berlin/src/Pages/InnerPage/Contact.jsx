@@ -10,7 +10,7 @@ const Contact = () => {
       {/* Contact */}
       {/* Contact with Us */}
       <div className="py-20 2xl:py-[120px] dark:bg-lightBlack">
-        <div className="Container bg-whiteSmoke dark:bg-normalBlack px-7 md:px-10 lg:px-14 2xl:px-20 py-10 md:py-14 lg:py-18 xl:py-20 2xl:py-[100px] ">
+        <div className="Container bg-whiteSmoke dark:bg-normalBlack px-7 md:px-10 lg:px-14 2xl:px-20 py-6 md:py-8 lg:py-10 xl:py-12 2xl:py-[50px]">
           <div className="flex items-center flex-col md:flex-row">
             <div
               className="py-5 sm:p-5 flex-1"

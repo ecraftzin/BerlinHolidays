@@ -560,7 +560,7 @@ const Room = () => {
       </div>
 
       {/* Extra Facilities */}
-      <div className="bg-normalBlack py-20 lg:py-[120px] relative">
+      <div className="bg-normalBlack py-20 lg:py-[50px] relative">
         <div className="Container pb-[100px] ">
           {/* Section heading */}
           <div
@@ -696,7 +696,7 @@ const Room = () => {
 
       {/* Contact with Us */}
       <div className="">
-        <div className="Container bg-whiteSmoke  px-7 md:px-10 lg:px-14 2xl:px-20 py-10 md:py-14 lg:py-18 xl:py-20 2xl:py-[100px] relative  z-[1] mt-[-100px] mb-[100px]">
+        <div className="Container bg-whiteSmoke  px-7 md:px-10 lg:px-14 2xl:px-20 py-10 md:py-14 lg:py-18 xl:py-20 2xl:py-[100px] relative  z-[1] mt-[-100px] mb-[50px]">
           <div className="flex md:items-center flex-col md:flex-row">
             <div
               className="px-2 py-5 sm:p-5 flex-1"

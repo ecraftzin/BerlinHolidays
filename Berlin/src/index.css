@@ -162,3 +162,50 @@ option:hover {
 .member {
   @apply p-[30px] border border-lightGray dark:border-gray px-[30px]  text-center  relative z-[1] before:absolute before:w-0 before:h-full before:left-1/2 before:top-0 before:bg-khaki before:z-[-1] before:transition-all before:duration-500 before:hover:w-full before:hover:left-0 overflow-hidden bg-center bg-cover;
 }
+
+@media (max-width: 768px) {
+  .grid.items-center.justify-center-center.grid-cols-1.sm\:grid-cols-2.md\:grid-cols-3.lg\:grid-cols-4.\32 xl\:grid-cols-6.\33 xl\:grid-cols-6.gap-4.xl\:gap-\[26px\].pt-\[60px\].pb-\[110px\].px-8.lg\:px-10.xl\:px-28.\32 xl\:px-0.aos-init.aos-animate {
+    display: flex
+;
+    flex-direction: column;
+}
+}
+
+/* home YOUR GATEWAY TO LUXURY GETAWAYS */
+section.dark\:bg-mediumBlack.py-20.\32 xl\:py-\[120px\] {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+}
+
+/* home- resort fecilities */
+.py-\[110px\].bg-\[url\(\'\/images\/home-1\/section-shape2\.png\'\)\].bg-no-repeat.bg-top.bg-opacity-\[0\.07\] {
+    padding-top: 20px !important;
+    padding-bottom: 1px !important;
+}
+
+
+/* about-latest post */
+section.Container.py-20.lg\:py-\[120px\] {
+    padding-top: 30px !important;
+    padding-bottom: 20px !important;
+}
+
+
+/* find rooms-contact form */
+.py-20.\32 xl\:py-\[120px\].dark\:bg-lightBlack {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+}
+
+
+/* mobile view services */
+@media (max-width: 768px) {
+  .Container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 20px !important;
+}
+}

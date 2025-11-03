@@ -268,37 +268,16 @@ const Navbar = () => {
               </div> */}
             </NavLink>
             {/* blog sub menu link */}
-            <NavLink
+             <NavLink
               className={`${({ isActive, isPending }) =>
                 isPending
                   ? "pending"
                   : isActive
                   ? "active"
-                  : ""} text-lightBlack lg:text-white dark:text-white  lg:border-b-0 px-3 py-2 w-full block transition-all duration-300 group relative `}
-              to="#"
+                  : ""} text-lightBlack lg:text-white dark:text-white  lg:border-b-0 px-3 py-2 w-full block transition-all duration-300`}
+              to="/blog"
             >
-              <span className="flex items-center">
-                BLOG
-                <BiChevronDown className="ml-1" />
-              </span>
-              <div className="absolute pt-4 lg:pt-8 z-20">
-                <ul className="shadow-2xl hidden group-hover:block rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm  py-4">
-                  <div className=" px-5 group hover:bg-khaki hover:text-white">
-                    <li className="hover:ml-3 duration-300 ">
-                      <NavLink to="/blog" className="py-2 block">
-                        BLOG
-                      </NavLink>
-                    </li>
-                  </div>
-                  <div className=" px-5 group hover:bg-khaki hover:text-white">
-                    <li className="hover:ml-3 duration-300 ">
-                      <NavLink to="/blog_details" className="py-2 block">
-                        BLOG DETAILS
-                      </NavLink>
-                    </li>
-                  </div>
-                </ul>
-              </div>
+              Blog
             </NavLink>
             <NavLink
               className={`${({ isActive, isPending }) =>

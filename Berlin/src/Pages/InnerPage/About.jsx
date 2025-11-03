@@ -193,7 +193,7 @@ const [blogSliderRef] = useKeenSlider({
       </div>
 
       {/* Expert Members */}
-      <div className="dark:bg-normalBlack py-20 2xl:py-[120px]">
+      <div className="dark:bg-normalBlack pt-8 pb-20 md:pt-10 lg:pt-12 2xl:pt-[60px] 2xl:pb-[120px]">
         <div className="Container">
           {/* section header */}
           <div
@@ -212,7 +212,7 @@ const [blogSliderRef] = useKeenSlider({
               <hr className="w-[100px] h-[1px] bg-lightGray dark:bg-gray text-lightGray dark:text-gray" />
             </div>
             <h1 className="text-xl sm:text-2xl md:text-3xl 2xl:text-[38px] leading-[42px] 2xl:leading-[52px] text-lightBlack dark:text-white mt-[10px] mb-[14px] font-Garamond font-semibold uppercase">
-              MEET THE EXPER MEMBERS
+              MEET THE EXPERT MEMBERS
             </h1>
             <p className="font-Lora leading-7 lg:leading-[26px] text-lightGray font-normal text-sm sm:text-base">
               Every guest is cared for by passionate professionals 
@@ -325,7 +325,7 @@ const [blogSliderRef] = useKeenSlider({
       </div>
 
       {/* Clients Feedback */}
-      <section className="bg-[#f8f6f3] dark:bg-lightBlack py-20 lg:py-[120px]">
+      <section className="bg-[#f8f6f3] dark:bg-lightBlack py-20 lg:py-[50px]">
         <div className="Container  ">
           {/* Section heading */}
           <div

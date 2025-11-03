@@ -26,7 +26,7 @@ const HotelAndFacilities = () => {
               From infinity pools and fine-dining restaurants to rejuvenating spas and 
               adventure activities, every corner of our resort offers an experience to 
               remember. Enjoy personalized service, tranquil surroundings, and all the 
-              modern amenities you need for a perfect getaway.
+              modern amenities you need for a perfect getaway.  
             </p>
           </div>
           {/* HOTEL’S FACILITIES content */}

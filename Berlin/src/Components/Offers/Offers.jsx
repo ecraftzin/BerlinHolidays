@@ -26,7 +26,7 @@ const Offers = () => {
   });
   return (
     <section className="bg-[#f8f6f3] dark:bg-lightBlack">
-      <div className="Container py-20 lg:py-[120px] ">
+      <div className="Container py-20 lg:py-[50px] ">
         <div
           className="flex items-center justify-between relative"
           data-aos="fade-up"
