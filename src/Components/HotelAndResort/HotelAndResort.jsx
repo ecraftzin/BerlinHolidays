@@ -48,7 +48,7 @@ const HotelAndResort = () => {
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
               >
                <img
-  src="/images/home-1/Hotel_2.png"
+  src="/images/home-1/hotel_2.png"
   alt="Hotel-slider-image"
   className="h-[85%] lg:h-[90%] w-full object-cover"
 />
@@ -70,7 +70,7 @@ const HotelAndResort = () => {
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
               >
                <img
-  src="/images/home-1/Hotel2.png"
+  src="/images/home-1/hotel2.png"
   alt="Hotel-slider-image"
   className="h-[85%] md:h-[100%] lg:h-[90%] w-full object-cover"
 />
