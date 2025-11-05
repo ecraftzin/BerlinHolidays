@@ -4,8 +4,7 @@ import "keen-slider/keen-slider.min.css";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import Hotel2 from "../../../public/images/home-1/Hotel2.png";
-import Hotel_2 from "../../../public/images/home-1/Hotel_2.png";
+
 
 const HotelAndResort = () => {
   const [, setCurrentSlide] = useState(0);
@@ -48,11 +47,11 @@ const HotelAndResort = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
               >
-                <img
-                  src={Hotel_2}
-                  alt="Hotel-slider-image"
-                  className="h-[85%] lg:h-[90%] w-full object-cover"
-                />
+               <img
+  src="/images/home-1/Hotel_2.png"
+  alt="Hotel-slider-image"
+  className="h-[85%] lg:h-[90%] w-full object-cover"
+/>
                 {/* Overlay Effect */}
                 <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
               </motion.div>
@@ -70,11 +69,11 @@ const HotelAndResort = () => {
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 260, damping: 20 }}
               >
-                <img
-                  src={Hotel2}
-                  alt="Hotel-slider-image"
-                  className="h-[85%] md:h-[100%] lg:h-[90%] w-full object-cover"
-                />
+               <img
+  src="/images/home-1/Hotel2.png"
+  alt="Hotel-slider-image"
+  className="h-[85%] md:h-[100%] lg:h-[90%] w-full object-cover"
+/>
                 {/* Overlay Effect */}
                 <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
               </motion.div>
