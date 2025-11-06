@@ -4,6 +4,7 @@ import { FaBars } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { BiChevronDown, BiSun } from "react-icons/bi";
 import { IoMoonSharp } from "react-icons/io5";
+import { FaUserCircle } from "react-icons/fa";
 import { useEffect, useState } from "react";
 
 const Navbar3 = () => {
@@ -83,6 +84,9 @@ const Navbar3 = () => {
                   />
                 )}
               </span>
+              <Link to="/login" className="mr-3 cursor-pointer" title="Login">
+                <FaUserCircle className="text-white" size={20} />
+              </Link>
               <button
                 className="lg:hidden block focus:outline-none "
                 onClick={toggleNavbar}
@@ -330,6 +334,12 @@ const Navbar3 = () => {
                   />
                 )}
               </span>
+              <Link to="/login" className="mr-3 cursor-pointer group" title="Login">
+                <FaUserCircle
+                  className="text-white hover:text-khaki group-hover:scale-110 transition-all duration-300"
+                  size={35}
+                />
+              </Link>
               <Link to="#" className=" pr-3">
                 <FaBars size={28} className="text-white hover:text-khaki" />
               </Link>
