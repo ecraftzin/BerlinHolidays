@@ -23,7 +23,7 @@ const HeroSection = () => {
           delay: 10000,
           disableOnInteraction: true,
         }}
-        pagination={{ clickable: true }}
+        pagination={{clickable: true }}
         modules={[Navigation, Autoplay, Pagination]}
         className="mySwiper"
       >
@@ -56,5 +56,4 @@ const HeroSection = () => {
     </div>
   );
 };
-
 export default HeroSection;

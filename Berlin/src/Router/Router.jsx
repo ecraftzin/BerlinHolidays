@@ -29,6 +29,8 @@ import Blog from "../Pages/InnerPage/Blog";
 import BlogDetails from "../Pages/InnerPage/BlogDetails";
 import Contact from "../Pages/InnerPage/Contact";
 import ErrorPage from "../Shared/ErrorPage/ErrorPage";
+import AdminDashboard from "../Pages/AdminDashboard/AdminDashboard.jsx";
+import LoginPage from "../Pages/LoginPage/LoginPage.jsx";
 
 
 // Starting React Router.
@@ -313,6 +315,20 @@ const router = createBrowserRouter([
       },
     ],
   },
+  // login page
+{
+  path: "/login",
+  element: <LoginPage />,
+},
+
+// admin dashboard
+{
+  path: "/admin/dashboard",
+  element: <AdminDashboard />,
+},
+
+
+  
 ]);
 
 export default router;

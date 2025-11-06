@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 // import useScrollPosition from "./useScrollPosition";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaUserCircle } from "react-icons/fa";
 import { TfiEmail } from "react-icons/tfi";
 import { IoMdClose } from "react-icons/io";
 import { BiChevronDown, BiSun } from "react-icons/bi";
@@ -144,6 +144,9 @@ const Navbar5 = () => {
                     />
                   )}
                 </span>
+                <Link to="/login" className="mr-3 cursor-pointer" title="Login">
+                  <FaUserCircle className="text-white" size={20} />
+                </Link>
                 <button
                   className="lg:hidden block focus:outline-none "
                   onClick={toggleNavbar}
@@ -397,6 +400,12 @@ const Navbar5 = () => {
                     />
                   )}
                 </span>
+                <Link to="/login" className="mr-3 cursor-pointer group" title="Login">
+                  <FaUserCircle
+                    className="text-white hover:text-khaki group-hover:scale-110 transition-all duration-300"
+                    size={35}
+                  />
+                </Link>
                 <Link to={"/pricing"} className=" pr-3">
                   <button className="btn-primary hover:text-khaki font-bold after:bg-white after:text-khaki hover:before:bg-white">
                     Book Now
