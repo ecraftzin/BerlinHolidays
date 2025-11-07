@@ -1,6 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import useScrollPosition from "./useScrollPosition";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaUserCircle } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { BiChevronDown, BiSun } from "react-icons/bi";
 import { IoMoonSharp } from "react-icons/io5";
@@ -82,6 +82,9 @@ const Navbar = () => {
                   />
                 )}
               </span>
+              <Link to="/login" className="mr-3 cursor-pointer" title="Login">
+                <FaUserCircle className="text-white" size={20} />
+              </Link>
               <button
                 className="lg:hidden block focus:outline-none "
                 onClick={toggleNavbar}
@@ -311,6 +314,12 @@ const Navbar = () => {
             </span>
             <Link to="/find_room">
               <button className="btn-secondary ">Booking Online</button>
+            </Link>
+            <Link to="/login" className="ml-3 cursor-pointer group" title="Login">
+              <FaUserCircle
+                className="text-white group-hover:scale-110 transition-all duration-300"
+                size={35}
+              />
             </Link>
           </div>
         </div>

@@ -217,3 +217,29 @@ section.Container.py-20.lg\:py-\[120px\] {
         background-color: #c29d6d !important;
     }
 }
+
+/* Hero text animations */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Adding animation class to the text */
+.hero-text {
+  animation: fadeIn 3s ease-out, slideIn 2s ease-out;
+}

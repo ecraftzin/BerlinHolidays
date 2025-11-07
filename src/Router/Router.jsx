@@ -29,6 +29,25 @@ import Blog from "../Pages/InnerPage/Blog";
 import BlogDetails from "../Pages/InnerPage/BlogDetails";
 import Contact from "../Pages/InnerPage/Contact";
 import ErrorPage from "../Shared/ErrorPage/ErrorPage";
+import SupabaseTest from "../Pages/SupabaseTest/SupabaseTest";
+
+// Login and Signup Pages
+import LoginPage from "../Pages/LoginPage/LoginPage";
+import SignupPage from "../Pages/SignupPage/SignupPage";
+
+// Admin Pages
+import AdminLayout from "../Components/Admin/AdminLayout";
+import DashboardOverview from "../Pages/AdminDashboard/DashboardOverview";
+import BlogManagement from "../Pages/AdminDashboard/BlogManagement";
+import SEOManagement from "../Pages/AdminDashboard/SEOManagement";
+import RoomTypes from "../Pages/AdminDashboard/RoomTypes";
+import RatePlans from "../Pages/AdminDashboard/RatePlans";
+import RatesCalendar from "../Pages/AdminDashboard/RatesCalendar";
+import RoomAvailability from "../Pages/AdminDashboard/RoomAvailability";
+import PricingPlans from "../Pages/AdminDashboard/PricingPlans";
+import SpecialOffers from "../Pages/AdminDashboard/SpecialOffers";
+import RestaurantCategories from "../Pages/AdminDashboard/RestaurantCategories";
+import RestaurantMenu from "../Pages/AdminDashboard/RestaurantMenu";
 
 // Starting React Router.
 const router = createBrowserRouter([
@@ -84,6 +103,10 @@ const router = createBrowserRouter([
       {
         path: "/contact",
         element: <Contact />,
+      },
+      {
+        path: "/supabase-test",
+        element: <SupabaseTest />,
       },
     ],
   },
@@ -309,6 +332,75 @@ const router = createBrowserRouter([
       {
         path: "/home5/contact",
         element: <Contact />,
+      },
+    ],
+  },
+  // Login Page
+  {
+    path: "/login",
+    element: <LoginPage />,
+  },
+  // Signup Page
+  {
+    path: "/signup",
+    element: <SignupPage />,
+  },
+  // Admin Dashboard
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      {
+        path: "dashboard",
+        element: <DashboardOverview />,
+      },
+      {
+        path: "blog",
+        element: <BlogManagement />,
+      },
+      {
+        path: "seo",
+        element: <SEOManagement />,
+      },
+      {
+        path: "rooms/types",
+        element: <RoomTypes />,
+      },
+      {
+        path: "rooms/rate-plans",
+        element: <RatePlans />,
+      },
+      {
+        path: "rooms/rates",
+        element: <RatesCalendar />,
+      },
+      {
+        path: "rooms/availability",
+        element: <RoomAvailability />,
+      },
+      {
+        path: "pricing-plans",
+        element: <PricingPlans />,
+      },
+      {
+        path: "special-offers",
+        element: <SpecialOffers />,
+      },
+      {
+        path: "restaurant/categories",
+        element: <RestaurantCategories />,
+      },
+      {
+        path: "restaurant/menu-items",
+        element: <RestaurantMenu />,
+      },
+      {
+        path: "media",
+        element: <DashboardOverview />,
+      },
+      {
+        path: "users",
+        element: <DashboardOverview />,
       },
     ],
   },
