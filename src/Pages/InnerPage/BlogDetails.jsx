@@ -148,7 +148,7 @@ const BlogDetails = () => {
                   {parsedContent.highlights && parsedContent.highlights.length > 0 && (
                     <div className="pt-10">
                       <h2 className="pb-4 font-Garamond text-2xl text-lightBlack dark:text-white font-semibold">
-                        Highlights
+                        <HIGHLIGHTS></HIGHLIGHTS>
                       </h2>
                       <ul className="space-y-6">
                         {parsedContent.highlights.map((item, index) => (
