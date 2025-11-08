@@ -9,10 +9,30 @@ import {
   FaRulerCombined,
   FaCheckCircle,
   FaUpload,
+  FaWifi,
+  FaSwimmingPool,
+  FaCoffee,
+  FaDumbbell,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { getAllRoomTypes, createRoomType, updateRoomType, deleteRoomType } from "../../services/roomService";
 import { uploadImage } from "../../services/storageService";
+
+// Available amenities list with icons
+const AVAILABLE_AMENITIES = [
+  { id: "2-5-persons", label: "2 - 5 Persons", icon: FaUsers },
+  { id: "free-wifi", label: "Free WiFi Available", icon: FaWifi },
+  { id: "swimming-pool", label: "Swimming Pools", icon: FaSwimmingPool },
+  { id: "breakfast", label: "Breakfast", icon: FaCoffee },
+  { id: "250-sqft", label: "250 SQFT Rooms", icon: FaRulerCombined },
+  { id: "gym", label: "Gym facilities", icon: FaDumbbell },
+  { id: "ac", label: "Air Conditioning", icon: null },
+  { id: "tv", label: "Television", icon: null },
+  { id: "mini-bar", label: "Mini Bar", icon: null },
+  { id: "room-service", label: "Room Service", icon: null },
+  { id: "parking", label: "Free Parking", icon: null },
+  { id: "laundry", label: "Laundry Service", icon: null },
+];
 
 const RoomTypes = () => {
   const [showModal, setShowModal] = useState(false);
@@ -21,6 +41,7 @@ const RoomTypes = () => {
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [visibleRooms, setVisibleRooms] = useState(3); // Number of room type cards to display
 
   const [formData, setFormData] = useState({
     name: "",
@@ -65,13 +86,25 @@ const RoomTypes = () => {
     }));
   };
 
-  const handleAmenitiesChange = (e) => {
-    const amenitiesText = e.target.value;
-    const amenitiesArray = amenitiesText.split(",").map((item) => item.trim()).filter((item) => item);
-    setFormData((prev) => ({
-      ...prev,
-      amenities: amenitiesArray,
-    }));
+  const handleAmenityToggle = (amenityLabel) => {
+    setFormData((prev) => {
+      const amenities = prev.amenities || [];
+      const isSelected = amenities.includes(amenityLabel);
+
+      if (isSelected) {
+        // Remove amenity
+        return {
+          ...prev,
+          amenities: amenities.filter((a) => a !== amenityLabel),
+        };
+      } else {
+        // Add amenity
+        return {
+          ...prev,
+          amenities: [...amenities, amenityLabel],
+        };
+      }
+    });
   };
 
   const handleImageUpload = async (e) => {
@@ -179,6 +212,11 @@ const RoomTypes = () => {
     });
   };
 
+  // Show more room type cards (3 at a time)
+  const handleShowMoreRooms = () => {
+    setVisibleRooms(prev => prev + 3);
+  };
+
   const handleSaveRoom = async () => {
     // Validation
     if (!formData.name || !formData.base_price || !formData.capacity) {
@@ -258,9 +296,31 @@ const RoomTypes = () => {
           </button>
         </div>
       ) : (
-        /* Room Types Grid */
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {roomTypes.map((room) => (
+        <div className="space-y-6">
+          {/* Room Counter Display */}
+          {roomTypes.length > 0 && (
+            <div className="flex items-center justify-between p-4 rounded-lg border-2" style={{ backgroundColor: "#f7f5f2", borderColor: "#c49e72" }}>
+              <div className="flex items-center space-x-3">
+                <FaBed className="text-2xl" style={{ color: "#c49e72" }} />
+                <div>
+                  <p className="text-sm font-Lora text-gray-600">Displaying Room Types</p>
+                  <p className="text-xl font-bold font-Garamond" style={{ color: "#1e1e1e" }}>
+                    {roomTypes.length > 0 ? `1 >> ${Math.min(visibleRooms, roomTypes.length)}` : '0 >> 0'}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-Lora text-gray-600">Total Room Types</p>
+                <p className="text-2xl font-bold font-Garamond" style={{ color: "#006938" }}>
+                  {roomTypes.length}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Room Types Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {roomTypes.slice(0, visibleRooms).map((room) => (
             <div
               key={room.id}
               className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
@@ -393,6 +453,21 @@ const RoomTypes = () => {
               </div>
             </div>
           ))}
+          </div>
+
+          {/* Show More Button */}
+          {visibleRooms < roomTypes.length && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={handleShowMoreRooms}
+                className="px-8 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md flex items-center space-x-2"
+                style={{ backgroundColor: "#c49e72" }}
+              >
+                <FaPlus />
+                <span>Show More Rooms (3 more)</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -564,17 +639,44 @@ const RoomTypes = () => {
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
-                      Amenities (comma-separated)
+                    <label className="block text-sm font-semibold font-Garamond mb-3" style={{ color: "#1e1e1e" }}>
+                      Amenities
                     </label>
-                    <input
-                      type="text"
-                      value={formData.amenities.join(", ")}
-                      onChange={handleAmenitiesChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-opacity-50 font-Lora"
-                      style={{ borderColor: "#c49e72" }}
-                      placeholder="WiFi, AC, TV, Mini Bar, Swimming Pool, Gym facilities"
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 border border-gray-200 rounded-lg" style={{ borderColor: "#c49e72" }}>
+                      {AVAILABLE_AMENITIES.map((amenity) => {
+                        const Icon = amenity.icon;
+                        const isSelected = formData.amenities.includes(amenity.label);
+
+                        return (
+                          <label
+                            key={amenity.id}
+                            className={`flex items-center space-x-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                              isSelected
+                                ? "border-opacity-100 bg-opacity-10"
+                                : "border-gray-200 hover:border-opacity-50"
+                            }`}
+                            style={{
+                              borderColor: isSelected ? "#c49e72" : undefined,
+                              backgroundColor: isSelected ? "#f7f5f2" : undefined,
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => handleAmenityToggle(amenity.label)}
+                              className="w-5 h-5 rounded accent-[#c49e72] cursor-pointer"
+                            />
+                            {Icon && <Icon className="text-lg" style={{ color: isSelected ? "#c49e72" : "#6b7280" }} />}
+                            <span className={`font-Lora text-sm ${isSelected ? "font-semibold" : ""}`} style={{ color: isSelected ? "#1e1e1e" : "#6b7280" }}>
+                              {amenity.label}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-gray-500 font-Lora mt-2">
+                      Select all amenities that apply to this room type
+                    </p>
                   </div>
 
                   <div className="md:col-span-2">

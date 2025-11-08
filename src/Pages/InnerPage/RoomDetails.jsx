@@ -1,20 +1,49 @@
 import { BsArrowLeft, BsArrowRight, BsCheck2 } from "react-icons/bs";
 import BreadCrumb from "../../BreadCrumb/BreadCrumb";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiLogOut } from "react-icons/fi";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import { getRoomTypeBySlug } from "../../services/roomService";
 
 const RoomDetails = () => {
   const [imageIndex, setImageIndex] = useState(0);
+  const [roomData, setRoomData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const { slug } = useParams();
   const bookingsData = location.state && location.state;
 
   const navigate = useNavigate();
-  const images = [
-    "/images/inner/room-details-1.jpg",
-    "/images/inner/room-details-2.jpg",
-  ];
+
+  // Fetch room data by slug
+  useEffect(() => {
+    const fetchRoomData = async () => {
+      setLoading(true);
+
+      // First check if room data was passed via navigation state
+      if (location.state?.roomData) {
+        setRoomData(location.state.roomData);
+        setLoading(false);
+        return;
+      }
+
+      // Otherwise fetch from database using slug
+      if (slug) {
+        const result = await getRoomTypeBySlug(slug);
+        if (!result.error && result.data) {
+          setRoomData(result.data);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchRoomData();
+  }, [slug, location.state]);
+
+  const images = roomData?.images && roomData.images.length > 0
+    ? roomData.images
+    : ["/images/inner/room-details-1.jpg", "/images/inner/room-details-2.jpg"];
 
   const prevBtn = () => {
     setImageIndex(
@@ -51,6 +80,32 @@ const RoomDetails = () => {
       }
     });
   };
+  if (loading) {
+    return (
+      <section className="">
+        <BreadCrumb title="room details" />
+        <div className="py-20 2xl:py-[120px] dark:bg-lightBlack">
+          <div className="Container text-center">
+            <p className="text-gray dark:text-lightGray font-Lora">Loading room details...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!roomData) {
+    return (
+      <section className="">
+        <BreadCrumb title="room details" />
+        <div className="py-20 2xl:py-[120px] dark:bg-lightBlack">
+          <div className="Container text-center">
+            <p className="text-gray dark:text-lightGray font-Lora">Room not found.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="">
       <BreadCrumb title="room details" />
@@ -67,7 +122,7 @@ const RoomDetails = () => {
             >
               <img
                 src={images[imageIndex]}
-                alt=""
+                alt={roomData.name}
                 className="transition-all duration-500 delay-300"
               />
               <div className="flex ">
@@ -93,40 +148,30 @@ const RoomDetails = () => {
             </div>
             {/* Room content */}
             <div className="pt-5 lg:pt-[35px]  pr-3">
-              <p className="text-base font-Lora text-khaki">LUXURY ROOM</p>
+              <p className="text-base font-Lora text-khaki uppercase">{roomData.category_label || "LUXURY ROOM"}</p>
               <h2
                 className="py-2 sm:py-3 md:py-4 lg:py-[19px] 2xl:py-[25px] font-Garamond text-[22px] sm:text-2xl md:text-3xl lg:text-4xl 2xl:text-[38px] 3xl:text-[40px] leading-6 lg:leading-[26px]  text-lightBlack dark:text-white font-semibold"
                 data-aos="zoom-in-up"
                 data-aos-duration="1000"
               >
-                {bookingsData && bookingsData.title
-                  ? bookingsData.title
-                  : "Delux Family Rooms"}
+                {roomData.name}
               </h2>
               <p
                 className="text-sm lg:text-base leading-6 text-gray dark:text-lightGray font-normal font-Lora"
                 data-aos="zoom-in-up"
                 data-aos-duration="1000"
               >
-                Rapidiously myocardinate cross-platform intellectual capital
-                after marketing model. Appropriately create interactive
-                infrastructures after maintainable are Holisticly facilitate
-                stand-alone inframe extend state of the art benefits via
-                web-enabled value. Completely fabricate extensible infomediaries
-                rather than reliable e-services. Dramatically whiteboard
-                alternative
+                {roomData.description || "Experience luxury and comfort in our beautifully designed rooms."}
               </p>
-              <p
-                className="mt-5 2xl:mt-7 text-sm lg:text-base leading-6 text-gray dark:text-lightGray font-normal font-Lora"
-                data-aos="zoom-in-up"
-                data-aos-duration="1000"
-              >
-                Conveniently fashion pandemic potentialities for team driven
-                technologies. Proactively orchestrate robust systems rather than
-                user-centric vortals. Distinctively seize top-line e-commerce
-                with premier intellectual capital. Efficiently strategize
-                goal-oriented
-              </p>
+              {roomData.long_description && (
+                <p
+                  className="mt-5 2xl:mt-7 text-sm lg:text-base leading-6 text-gray dark:text-lightGray font-normal font-Lora"
+                  data-aos="zoom-in-up"
+                  data-aos-duration="1000"
+                >
+                  {roomData.long_description}
+                </p>
+              )}
               {/* Check-In and check-Out */}
               <div
                 className="md:flex items-center flex-col md:flex-row md:justify-between py-10 lg:py-[60px]"
@@ -330,6 +375,21 @@ const RoomDetails = () => {
               </div>
             </div>
 
+            {/* Price Display */}
+            <div
+              className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 bg-whiteSmoke dark:bg-normalBlack px-7 py-8"
+              data-aos="zoom-in-up"
+              data-aos-duration="1000"
+            >
+              <h4 className="font-Garamond text-xl sm:text-[22px] md:text-2xl xl:text-3xl leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold mb-4">
+                Price
+              </h4>
+              <div className="flex items-center justify-between">
+                <span className="text-sm lg:text-base text-gray dark:text-lightGray font-Lora">Per Night</span>
+                <span className="text-2xl font-Garamond text-khaki font-semibold">₹{roomData.base_price}</span>
+              </div>
+            </div>
+
             {/* Amenities */}
             <div
               className="mt-3 sm:mt-4 md:mt-5 lg:mt-6"
@@ -337,63 +397,50 @@ const RoomDetails = () => {
               data-aos-duration="1000"
             >
               <h4 className="font-Garamond text-xl sm:text-[22px] md:text-2xl xl:text-3xl leading-7 md:leading-8 lg:leading-10 xl:leading-[50px] 2xl:leading-[60px] 3xl:leading-[70px] text-lightBlack dark:text-white font-semibold mb-6">
-                Amenities
+                Room Details
               </h4>
               <div className="grid items-center ">
-                <div className="flex items-center py-5 border-b-[1px] border-lightGray dark:border-gray">
-                  <img
-                    src="/images/inner/room-amenities-1.png"
-                    className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
-                  />
-                  <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
-                    2 - 5 Persons
-                  </span>
-                </div>
-                <div className="flex items-center py-5 border-b-[1px] border-lightGray dark:border-gray">
-                  <img
-                    src="/images/inner/room-amenities-2.png"
-                    className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
-                  />
-                  <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
-                    Free WiFi Available
-                  </span>
-                </div>
-                <div className="flex items-center py-5 border-b-[1px] border-lightGray dark:border-gray">
-                  <img
-                    src="/images/inner/room-amenities-3.png"
-                    className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
-                  />
-                  <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
-                    Swimming Pools
-                  </span>
-                </div>
-                <div className="flex items-center py-5 border-b-[1px] border-lightGray dark:border-gray">
-                  <img
-                    src="/images/inner/room-amenities-4.png"
-                    className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
-                  />
-                  <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
-                    Breakfast
-                  </span>
-                </div>
-                <div className="flex items-center py-5 border-b-[1px] border-lightGray dark:border-gray">
-                  <img
-                    src="/images/inner/room-amenities-5.png"
-                    className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
-                  />
-                  <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
-                    250 SQFT Rooms
-                  </span>
-                </div>
-                <div className="flex items-center py-5 ">
-                  <img
-                    src="/images/inner/room-amenities-6.png"
-                    className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
-                  />
-                  <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
-                    Gym facilities
-                  </span>
-                </div>
+                {roomData.max_occupancy && (
+                  <div className="flex items-center py-5 border-b-[1px] border-lightGray dark:border-gray">
+                    <img
+                      src="/images/inner/room-amenities-1.png"
+                      className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
+                    />
+                    <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
+                      Max {roomData.max_occupancy} Persons
+                    </span>
+                  </div>
+                )}
+                {roomData.bed_type && (
+                  <div className="flex items-center py-5 border-b-[1px] border-lightGray dark:border-gray">
+                    <img
+                      src="/images/home-1/room-bottom-icon.png"
+                      className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
+                    />
+                    <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
+                      {roomData.bed_type}
+                    </span>
+                  </div>
+                )}
+                {roomData.size && (
+                  <div className="flex items-center py-5 border-b-[1px] border-lightGray dark:border-gray">
+                    <img
+                      src="/images/inner/room-amenities-5.png"
+                      className="text-khaki mr-2 md:mr-3 xl:mr-[15px]"
+                    />
+                    <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
+                      {roomData.size}
+                    </span>
+                  </div>
+                )}
+                {roomData.amenities && roomData.amenities.length > 0 && roomData.amenities.map((amenity, index) => (
+                  <div key={index} className={`flex items-center py-5 ${index < roomData.amenities.length - 1 ? 'border-b-[1px] border-lightGray dark:border-gray' : ''}`}>
+                    <BsCheck2 size={16} className="text-khaki mr-2 md:mr-3 xl:mr-[15px]" />
+                    <span className="text-sm lg:text-[15px] leading-[26px] text-gray dark:text-lightGray font-normal font-Lora">
+                      {amenity}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

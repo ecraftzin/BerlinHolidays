@@ -77,6 +77,10 @@ const router = createBrowserRouter([
         element: <RoomDetails />,
       },
       {
+        path: "/room_details/:slug",
+        element: <RoomDetails />,
+      },
+      {
         path: "/services",
         element: <Services />,
       },
@@ -138,6 +142,10 @@ const router = createBrowserRouter([
         element: <RoomDetails />,
       },
       {
+        path: "/home2/room_details/:slug",
+        element: <RoomDetails />,
+      },
+      {
         path: "/home2/services",
         element: <Services />,
       },
@@ -191,6 +199,10 @@ const router = createBrowserRouter([
       },
       {
         path: "/home3/room_details",
+        element: <RoomDetails />,
+      },
+      {
+        path: "/home3/room_details/:slug",
         element: <RoomDetails />,
       },
       {
@@ -250,6 +262,10 @@ const router = createBrowserRouter([
         element: <RoomDetails />,
       },
       {
+        path: "/home4/room_details/:slug",
+        element: <RoomDetails />,
+      },
+      {
         path: "/home4/services",
         element: <Services />,
       },
@@ -303,6 +319,10 @@ const router = createBrowserRouter([
       },
       {
         path: "/home5/room_details",
+        element: <RoomDetails />,
+      },
+      {
+        path: "/home5/room_details/:slug",
         element: <RoomDetails />,
       },
       {
