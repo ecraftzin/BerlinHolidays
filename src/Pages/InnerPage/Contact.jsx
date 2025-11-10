@@ -216,7 +216,7 @@ const Contact = () => {
                     Our Locations
                   </p>
                   <p className="font-Garamond text-lg sm:text-xl md:text-[22px] leading-[26px] text-lightBlack dark:text-white font-medium ">
-                   BERLIN HOLIDAYS<br />
+                   Berlin Holidays<br />
                      Vaithiri-Pozhuthana Road - Parathode(Near Banasura Dam)-Wayanad,
                      Thariyod (Po) <br />
                      Kerala - 673575
