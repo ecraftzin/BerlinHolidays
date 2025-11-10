@@ -28,7 +28,7 @@ const HeroSection = () => {
         <SwiperSlide>
           <div className="relative w-full h-[700px] md:h-[800px] xl:h-[850px] 3xl:h-[950px] overflow-hidden">
             <video
-              src="https://pqurtwq9h9glt111.public.blob.vercel-storage.com/berlinbannervideo.mov"
+              src="https://ygaav3vv2u5jx1dw.public.blob.vercel-storage.com/berlinbannervideo.mov"
               autoPlay
               muted
               loop

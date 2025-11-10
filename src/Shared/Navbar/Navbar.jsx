@@ -173,7 +173,7 @@ const Navbar = () => {
             </NavLink>
             <div className="text-lightBlack lg:text-white dark:text-white lg:border-b-0 px-3 py-2 w-full block transition-all duration-300 group relative">
               <button className="flex items-center w-full lg:w-auto">
-                Rooms
+               ROOMS
                 <BiChevronDown className="ml-1" />
               </button>
               <div className="absolute pt-5 lg:pt-8 z-20">
