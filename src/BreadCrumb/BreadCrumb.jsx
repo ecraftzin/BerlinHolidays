@@ -1,20 +1,30 @@
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 
 const BreadCrumb = ({ title, home }) => {
   const location = useLocation();
   const pathName = location.pathname.split("/")[1];
+  const [videoError, setVideoError] = useState(false);
 
   return (
     <section className="relative h-[550px] flex items-center justify-center overflow-hidden">
-      {/* Background Video */}
-      <video
-        className="absolute inset-0 w-full h-full object-cover"
-        src="https://pillguzjpmnpa1q3.public.blob.vercel-storage.com/9befa2e3-fa3c-4e3b-b753-05b7d57215dd.mp4"
-        autoPlay
-        loop
-        muted
-        playsInline
-      ></video>
+      {/* Background Video with fallback to image */}
+      {!videoError ? (
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          src="https://pillguzjpmnpa1q3.public.blob.vercel-storage.com/9befa2e3-fa3c-4e3b-b753-05b7d57215dd.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          onError={() => setVideoError(true)}
+        ></video>
+      ) : (
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/inner/breadcumb.jpg')" }}
+        ></div>
+      )}
 
       {/* Overlay for better text readability */}
       <div className="absolute inset-0 bg-black/50"></div>

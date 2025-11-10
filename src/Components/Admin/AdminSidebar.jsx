@@ -9,8 +9,6 @@ import {
   FaTags,
   FaGift,
   FaUtensils,
-  FaImages,
-  FaUsers,
   FaChevronDown,
   FaChevronRight,
   FaBars,
@@ -20,6 +18,7 @@ import {
   FaCalendarAlt,
   FaDollarSign,
   FaListAlt,
+  FaQuestionCircle,
 } from "react-icons/fa";
 
 const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
@@ -80,6 +79,11 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
       path: "/admin/special-offers",
     },
     {
+      name: "FAQ",
+      icon: FaQuestionCircle,
+      path: "/admin/faq",
+    },
+    {
       name: "Restaurant",
       icon: FaUtensils,
       hasSubmenu: true,
@@ -88,16 +92,6 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
         { name: "Categories", icon: FaListAlt, path: "/admin/restaurant/categories" },
         { name: "Menu Items", icon: FaUtensils, path: "/admin/restaurant/menu-items" },
       ],
-    },
-    {
-      name: "Media Library",
-      icon: FaImages,
-      path: "/admin/media",
-    },
-    {
-      name: "Users & Roles",
-      icon: FaUsers,
-      path: "/admin/users",
     },
   ];
 

@@ -1,8 +1,28 @@
+import { useState, useEffect } from "react";
 import BreadCrumb from "../../BreadCrumb/BreadCrumb";
 import { GoDotFill } from "react-icons/go";
 import AnimatedAccordionPage from "./Accordion/AnimatedAccordionPage";
+import { getActivePricingPlans } from "../../services/pricingService";
 
 const Pricing = () => {
+  const [pricingPlans, setPricingPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPricingPlans();
+  }, []);
+
+  const fetchPricingPlans = async () => {
+    setLoading(true);
+    const { data, error } = await getActivePricingPlans();
+    if (error) {
+      console.error("Error fetching pricing plans:", error);
+    } else {
+      setPricingPlans(data || []);
+    }
+    setLoading(false);
+  };
+
   return (
     <div>
       <BreadCrumb title="Pricing" />
@@ -25,198 +45,72 @@ const Pricing = () => {
               <hr className="w-[100px] h-[1px] bg-lightGray dark:bg-gray text-lightGray dark:text-gray" />
             </div>
             <h1 className="text-xl sm:text-2xl md:text-3xl 2xl:text-[38px] leading-[42px] 2xl:leading-[52px] text-lightBlack dark:text-white mt-[10px] mb-[14px] font-Garamond font-semibold uppercase">
-              EXTRA PRICING PLANS
+              Holiday Packages & Pricing
             </h1>
             <p className="font-Lora leading-7 lg:leading-[26px] text-lightGray font-normal text-sm sm:text-base">
-              Proactively morph optimal infomediaries rather than accurate
-              expertise. Intrinsicly progressive resources rather than
-              resource-leveling
+              Explore our curated holiday packages designed to give you the best experience in Berlin
             </p>
           </div>
           {/* Pricing Plan */}
           <div className="mt-14 2xl:mt-[60px]">
-            <div className="grid items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-[30px]">
-              {/* Pricing one */}
-              <div
-                className="border-[1px] border-lightGray dark:border-gray group hover:border-khaki dark:hover:border-khaki"
-                data-aos="zoom-in-up"
-                data-aos-duration="1000"
-              >
-                <img
-                  src="/images/inner/pricing-1.jpg"
-                  alt=""
-                  className="relative w-full"
-                />
-
-                <div className="px-5 pb-5 2xl:px-[30px] 2xl:pb-[30px]">
-                  <div className="bg-lightBlack px-5 2xl:px-[30px] py-3 lg:py-4 relative bottom-[30px] z-[1] gallery-effect before:bg-khaki before:z-[-1] before:group-hover:w-full before:group-hover:left-0">
-                    <h4 className="text-lg sm:text-xl md:text-2xl xl:text-[26px] text-white font-Garamond font-semibold ">
-                      Room Services
-                    </h4>
-                  </div>
-                  <div className="flex items-center pb-5 ">
-                    <span className="text-2xl md:text-3xl xl:text-4xl 2xl:text-5xl 3xl:text-[50px] leading-7 md:leading-8 lg:leading-9 xl:leading-10 2xl:leading-[55px]  text-khaki font-bold font-Garamond">
-                      $12
-                    </span>
-                    <span className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ">
-                      / Daily
-                    </span>
-                  </div>
-                  <hr className="text-lightGray dark:text-gray " />
-                  <div className="py-5 2xl:pb-[30px]">
-                    <ul className="space-y-2">
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Bed and floor Celaning
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Orci miss natoque vasa ince
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Clean sorem ipsum morbin
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Wash & Clean equipment
-                        </p>
-                      </li>
-                    </ul>
-                  </div>
-                  <button className="btn-items dark:btn-secondary ">
-                    PURCHASES NOW
-                  </button>
-                </div>
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-khaki"></div>
               </div>
-              {/* Pricing two */}
-              <div
-                className="border-[1px] border-lightGray dark:border-gray group hover:border-khaki dark:hover:border-khaki"
-                data-aos="zoom-in-up"
-                data-aos-duration="1000"
-              >
-                <img
-                  src="/images/inner/pricing-1.jpg"
-                  alt=""
-                  className="relative w-full"
-                />
-
-                <div className="px-5 pb-5 2xl:px-[30px] 2xl:pb-[30px]">
-                  <div className="bg-lightBlack px-5 2xl:px-[30px] py-3 lg:py-4 relative bottom-[30px] z-[1] gallery-effect before:bg-khaki before:z-[-1] before:group-hover:w-full before:group-hover:left-0">
-                    <h4 className="text-lg sm:text-xl md:text-2xl xl:text-[26px] text-white font-Garamond font-semibold ">
-                      Room Services
-                    </h4>
-                  </div>
-                  <div className="flex items-center pb-5 ">
-                    <span className="text-2xl md:text-3xl xl:text-4xl 2xl:text-5xl 3xl:text-[50px] leading-7 md:leading-8 lg:leading-9 xl:leading-10 2xl:leading-[55px]  text-khaki font-bold font-Garamond">
-                      $12
-                    </span>
-                    <span className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ">
-                      / Daily
-                    </span>
-                  </div>
-                  <hr className="text-lightGray dark:text-gray " />
-                  <div className="py-5 2xl:pb-[30px]">
-                    <ul className="space-y-2">
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Bed and floor Celaning
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Orci miss natoque vasa ince
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Clean sorem ipsum morbin
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Wash & Clean equipment
-                        </p>
-                      </li>
-                    </ul>
-                  </div>
-                  <button className="btn-items dark:btn-secondary">
-                    PURCHASES NOW
-                  </button>
-                </div>
+            ) : pricingPlans.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-gray dark:text-lightGray font-Lora text-lg">
+                  No pricing plans available at the moment. Please check back later.
+                </p>
               </div>
-              {/* Pricing three */}
-              <div
-                className="border-[1px] border-lightGray dark:border-gray group hover:border-khaki dark:hover:border-khaki"
-                data-aos="zoom-in-up"
-                data-aos-duration="1000"
-              >
-                <img
-                  src="/images/inner/pricing-1.jpg"
-                  alt=""
-                  className="relative w-full"
-                />
+            ) : (
+              <div className="grid items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-[30px]">
+                {pricingPlans.map((plan, index) => (
+                  <div
+                    key={plan.id}
+                    className="border-[1px] border-lightGray dark:border-gray group hover:border-khaki dark:hover:border-khaki"
+                    data-aos="zoom-in-up"
+                    data-aos-duration="1000"
+                  >
+                    <img
+                      src={`/images/inner/pricing-${(index % 3) + 1}.jpg`}
+                      alt={plan.name}
+                      className="relative w-full"
+                    />
 
-                <div className="px-5 pb-5 2xl:px-[30px] 2xl:pb-[30px]">
-                  <div className="bg-lightBlack px-5 2xl:px-[30px] py-3 lg:py-4 relative bottom-[30px] z-[1] gallery-effect before:bg-khaki before:z-[-1] before:group-hover:w-full before:group-hover:left-0">
-                    <h4 className="text-lg sm:text-xl md:text-2xl xl:text-[26px] text-white font-Garamond font-semibold ">
-                      Room Services
-                    </h4>
+                    <div className="px-5 pb-5 2xl:px-[30px] 2xl:pb-[30px]">
+                      <div className="bg-lightBlack px-5 2xl:px-[30px] py-3 lg:py-4 relative bottom-[30px] z-[1] gallery-effect before:bg-khaki before:z-[-1] before:group-hover:w-full before:group-hover:left-0">
+                        <h4 className="text-lg sm:text-xl md:text-2xl xl:text-[26px] text-white font-Garamond font-semibold ">
+                          {plan.name}
+                        </h4>
+                      </div>
+                      <div className="flex items-center pb-5 ">
+                        <span className="text-2xl md:text-3xl xl:text-4xl 2xl:text-5xl 3xl:text-[50px] leading-7 md:leading-8 lg:leading-9 xl:leading-10 2xl:leading-[55px]  text-khaki font-bold font-Garamond">
+                          {plan.price}
+                        </span>
+                      </div>
+                      <div className="flex items-center pb-3">
+                        <span className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-semibold">
+                          Duration: {plan.duration}
+                        </span>
+                      </div>
+                      <hr className="text-lightGray dark:text-gray " />
+                      <div className="py-5 2xl:pb-[30px]">
+                        <h5 className="text-base font-semibold font-Garamond mb-3 text-lightBlack dark:text-white">
+                          Package Includes:
+                        </h5>
+                        <div className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal whitespace-pre-line">
+                          {plan.includes}
+                        </div>
+                      </div>
+                      <button className="btn-items dark:btn-secondary">
+                        BOOK NOW
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center pb-5 ">
-                    <span className="text-2xl md:text-3xl xl:text-4xl 2xl:text-5xl 3xl:text-[50px] leading-7 md:leading-8 lg:leading-9 xl:leading-10 2xl:leading-[55px]  text-khaki font-bold font-Garamond">
-                      $12
-                    </span>
-                    <span className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ">
-                      / Daily
-                    </span>
-                  </div>
-                  <hr className="text-lightGray dark:text-gray " />
-                  <div className="py-5 2xl:pb-[30px]">
-                    <ul className="space-y-2">
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Bed and floor Celaning
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Orci miss natoque vasa ince
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Clean sorem ipsum morbin
-                        </p>
-                      </li>
-                      <li className="flex items-center">
-                        <GoDotFill className="w-[9px] h-[9px] text-khaki" />
-                        <p className="text-sm sm:text-base lg:text-lg leading-[26px] text-gray dark:text-lightGray font-Lora font-normal ml-2">
-                          Wash & Clean equipment
-                        </p>
-                      </li>
-                    </ul>
-                  </div>
-                  <button className="btn-items dark:btn-secondary">
-                    PURCHASES NOW
-                  </button>
-                </div>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -46,6 +46,7 @@ import RatesCalendar from "../Pages/AdminDashboard/RatesCalendar";
 import RoomAvailability from "../Pages/AdminDashboard/RoomAvailability";
 import PricingPlans from "../Pages/AdminDashboard/PricingPlans";
 import SpecialOffers from "../Pages/AdminDashboard/SpecialOffers";
+import FAQManagement from "../Pages/AdminDashboard/FAQManagement";
 import RestaurantCategories from "../Pages/AdminDashboard/RestaurantCategories";
 import RestaurantMenu from "../Pages/AdminDashboard/RestaurantMenu";
 
@@ -407,20 +408,16 @@ const router = createBrowserRouter([
         element: <SpecialOffers />,
       },
       {
+        path: "faq",
+        element: <FAQManagement />,
+      },
+      {
         path: "restaurant/categories",
         element: <RestaurantCategories />,
       },
       {
         path: "restaurant/menu-items",
         element: <RestaurantMenu />,
-      },
-      {
-        path: "media",
-        element: <DashboardOverview />,
-      },
-      {
-        path: "users",
-        element: <DashboardOverview />,
       },
     ],
   },

@@ -1,5 +1,5 @@
 // src/Pages/AdminDashboard/RestaurantCategories.jsx
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FaPlus,
   FaEdit,
@@ -9,69 +9,161 @@ import {
   FaCheckCircle,
   FaSort,
 } from "react-icons/fa";
+import Swal from "sweetalert2";
+import {
+  getAllCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getCategoryCounts,
+} from "../../services/menuService";
 
 const RestaurantCategories = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [categoryCounts, setCategoryCounts] = useState({});
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    display_order: 1,
+    is_active: true,
+  });
 
-  const [categories, setCategories] = useState([
-    {
-      id: 1,
-      name: "Breakfast",
-      description: "Morning delights and traditional Kerala breakfast items",
-      itemCount: 15,
-      displayOrder: 1,
-      isActive: true,
-    },
-    {
-      id: 2,
-      name: "Lunch",
-      description: "Hearty lunch options featuring local and international cuisine",
-      itemCount: 18,
-      displayOrder: 2,
-      isActive: true,
-    },
-    {
-      id: 3,
-      name: "Dinner",
-      description: "Evening dining with specialty dishes and grills",
-      itemCount: 16,
-      displayOrder: 3,
-      isActive: true,
-    },
-    {
-      id: 4,
-      name: "Beverages",
-      description: "Refreshing drinks, teas, and specialty beverages",
-      itemCount: 7,
-      displayOrder: 4,
-      isActive: true,
-    },
-    {
-      id: 5,
-      name: "Desserts",
-      description: "Sweet treats and traditional desserts",
-      itemCount: 8,
-      displayOrder: 5,
-      isActive: true,
-    },
-  ]);
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    const { data, error } = await getAllCategories();
+    if (error) {
+      console.error("Error fetching categories:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to load categories. Please try again.",
+      });
+    } else {
+      setCategories(data || []);
+    }
+
+    // Get category counts
+    const { data: counts } = await getCategoryCounts();
+    if (counts) {
+      setCategoryCounts(counts);
+    }
+
+    setLoading(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
   const handleEditCategory = (category) => {
     setSelectedCategory(category);
+    setFormData({
+      name: category.name,
+      description: category.description || "",
+      display_order: category.display_order,
+      is_active: category.is_active,
+    });
     setShowModal(true);
   };
 
-  const handleDeleteCategory = (categoryId) => {
-    if (window.confirm("Are you sure you want to delete this category? All menu items in this category will be affected.")) {
-      setCategories(categories.filter((cat) => cat.id !== categoryId));
-      alert("Category deleted successfully!");
+  const handleDeleteCategory = async (categoryId) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This category will be deleted. Menu items in this category will not be deleted but will need to be reassigned.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#006938",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      const { error } = await deleteCategory(categoryId);
+      if (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to delete category. Please try again.",
+        });
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Category has been deleted successfully.",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        fetchCategories();
+      }
+    }
+  };
+
+  const handleSaveCategory = async () => {
+    // Validation
+    if (!formData.name.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "Missing Information",
+        text: "Please enter a category name.",
+      });
+      return;
+    }
+
+    const categoryData = {
+      name: formData.name,
+      description: formData.description,
+      display_order: parseInt(formData.display_order),
+      is_active: formData.is_active,
+    };
+
+    let result;
+    if (selectedCategory) {
+      // Update existing category
+      result = await updateCategory(selectedCategory.id, categoryData);
+    } else {
+      // Create new category
+      result = await createCategory(categoryData);
+    }
+
+    if (result.error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: `Failed to ${selectedCategory ? "update" : "create"} category. Please try again.`,
+      });
+    } else {
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: `Category ${selectedCategory ? "updated" : "created"} successfully!`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+      handleCloseModal();
+      fetchCategories();
     }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedCategory(null);
+    setFormData({
+      name: "",
+      description: "",
+      display_order: 1,
+      is_active: true,
+    });
   };
 
   return (
@@ -96,72 +188,96 @@ const RestaurantCategories = () => {
         </button>
       </div>
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category) => (
-          <div
-            key={category.id}
-            className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2" style={{ borderColor: "#006938" }}></div>
+        </div>
+      ) : categories.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-xl shadow-md">
+          <FaUtensils className="mx-auto text-6xl mb-4" style={{ color: "#c49e72" }} />
+          <h3 className="text-xl font-semibold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
+            No Categories Yet
+          </h3>
+          <p className="text-gray-600 font-Lora mb-6">
+            Get started by creating your first category
+          </p>
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-6 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md"
+            style={{ backgroundColor: "#006938" }}
           >
-            <div className="p-6" style={{ backgroundColor: "#f7f5f2" }}>
-              <div className="flex items-center justify-between mb-2">
-                <FaUtensils className="text-2xl" style={{ color: "#c49e72" }} />
-                <span className="text-sm font-Lora text-gray-600">
-                  Order: {category.displayOrder}
-                </span>
+            <FaPlus className="inline mr-2" />
+            Create First Category
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {categories.map((category) => (
+            <div
+              key={category.id}
+              className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
+            >
+              <div className="p-6" style={{ backgroundColor: "#f7f5f2" }}>
+                <div className="flex items-center justify-between mb-2">
+                  <FaUtensils className="text-2xl" style={{ color: "#c49e72" }} />
+                  <span className="text-sm font-Lora text-gray-600">
+                    Order: {category.display_order}
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
+                  {category.name}
+                </h3>
+                <p className="text-sm text-gray-600 font-Lora line-clamp-2">
+                  {category.description}
+                </p>
               </div>
-              <h3 className="text-xl font-bold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
-                {category.name}
-              </h3>
-              <p className="text-sm text-gray-600 font-Lora line-clamp-2">
-                {category.description}
-              </p>
+
+              <div className="p-6 space-y-4">
+                {/* Stats */}
+                <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "#f7f5f2" }}>
+                  <span className="text-sm text-gray-600 font-Lora">Menu Items</span>
+                  <span className="text-xl font-bold font-Garamond" style={{ color: "#006938" }}>
+                    {categoryCounts[category.name] || 0}
+                  </span>
+                </div>
+
+                {/* Status */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 font-Lora">Status</span>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold font-Lora ${
+                      category.is_active
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
+                    {category.is_active ? "Active" : "Inactive"}
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="flex space-x-2 pt-2">
+                  <button
+                    onClick={() => handleEditCategory(category)}
+                    className="flex-1 px-4 py-2 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all"
+                    style={{ backgroundColor: "#c49e72" }}
+                  >
+                    <FaEdit className="inline mr-2" />
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCategory(category.id)}
+                    className="px-4 py-2 rounded-lg border-2 border-red-500 text-red-500 font-Lora font-semibold hover:bg-red-50 transition-all"
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              </div>
             </div>
-
-            <div className="p-6 space-y-4">
-              {/* Stats */}
-              <div className="flex items-center justify-between p-3 rounded-lg" style={{ backgroundColor: "#f7f5f2" }}>
-                <span className="text-sm text-gray-600 font-Lora">Menu Items</span>
-                <span className="text-xl font-bold font-Garamond" style={{ color: "#006938" }}>
-                  {category.itemCount}
-                </span>
-              </div>
-
-              {/* Status */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 font-Lora">Status</span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold font-Lora ${
-                    category.isActive
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {category.isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
-
-              {/* Actions */}
-              <div className="flex space-x-2 pt-2">
-                <button
-                  onClick={() => handleEditCategory(category)}
-                  className="flex-1 px-4 py-2 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all"
-                  style={{ backgroundColor: "#c49e72" }}
-                >
-                  <FaEdit className="inline mr-2" />
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDeleteCategory(category.id)}
-                  className="px-4 py-2 rounded-lg border-2 border-red-500 text-red-500 font-Lora font-semibold hover:bg-red-50 transition-all"
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Add/Edit Modal */}
       {showModal && (
@@ -182,7 +298,9 @@ const RestaurantCategories = () => {
                     </label>
                     <input
                       type="text"
-                      defaultValue={selectedCategory?.name || ""}
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-opacity-50 font-Lora"
                       style={{ borderColor: "#c49e72" }}
                       placeholder="e.g., Breakfast, Lunch, Dinner"
@@ -195,8 +313,10 @@ const RestaurantCategories = () => {
                     </label>
                     <textarea
                       rows="3"
-                      defaultValue={selectedCategory?.description || ""}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-opacity-50 font-Lora"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-opacity-50 font-Lora resize-none"
                       style={{ borderColor: "#c49e72" }}
                       placeholder="Brief description of this category"
                     ></textarea>
@@ -208,7 +328,9 @@ const RestaurantCategories = () => {
                     </label>
                     <input
                       type="number"
-                      defaultValue={selectedCategory?.displayOrder || ""}
+                      name="display_order"
+                      value={formData.display_order}
+                      onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-opacity-50 font-Lora"
                       style={{ borderColor: "#c49e72" }}
                       placeholder="1"
@@ -223,24 +345,26 @@ const RestaurantCategories = () => {
                     <label className="block text-sm font-semibold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
                       Status
                     </label>
-                    <select
-                      defaultValue={selectedCategory?.isActive ? "active" : "inactive"}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-opacity-50 font-Lora"
-                      style={{ borderColor: "#c49e72" }}
-                    >
-                      <option value="active">Active</option>
-                      <option value="inactive">Inactive</option>
-                    </select>
+                    <label className="flex items-center space-x-2 mt-3">
+                      <input
+                        type="checkbox"
+                        name="is_active"
+                        checked={formData.is_active}
+                        onChange={handleInputChange}
+                        className="w-5 h-5 rounded"
+                        style={{ accentColor: "#006938" }}
+                      />
+                      <span className="text-sm font-Lora" style={{ color: "#1e1e1e" }}>
+                        Active (Show on website)
+                      </span>
+                    </label>
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-200">
                   <button
                     type="button"
-                    onClick={() => {
-                      alert(selectedCategory ? "Category updated successfully!" : "Category created successfully!");
-                      handleCloseModal();
-                    }}
+                    onClick={handleSaveCategory}
                     className="flex-1 px-6 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md"
                     style={{ backgroundColor: "#006938" }}
                   >

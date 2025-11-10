@@ -1,33 +1,32 @@
-// src/services/pricingService.js
+// src/services/faqService.js
 import { supabase } from '../config/supabaseClient';
 
 /**
- * Pricing Plans Service
- * Handles all database operations for pricing plans
- * Updated for new schema: name, duration, includes, price
+ * FAQ Service
+ * Handles all database operations for FAQs
  */
 
-// Get all pricing plans
-export const getAllPricingPlans = async () => {
+// Get all FAQs
+export const getAllFAQs = async () => {
   try {
     const { data, error } = await supabase
-      .from('pricing_plans')
+      .from('faqs')
       .select('*')
       .order('display_order', { ascending: true });
 
     if (error) throw error;
     return { data, error: null };
   } catch (error) {
-    console.error('Error fetching pricing plans:', error);
+    console.error('Error fetching FAQs:', error);
     return { data: null, error };
   }
 };
 
-// Get active pricing plans
-export const getActivePricingPlans = async () => {
+// Get active FAQs
+export const getActiveFAQs = async () => {
   try {
     const { data, error } = await supabase
-      .from('pricing_plans')
+      .from('faqs')
       .select('*')
       .eq('is_active', true)
       .order('display_order', { ascending: true });
@@ -35,16 +34,16 @@ export const getActivePricingPlans = async () => {
     if (error) throw error;
     return { data, error: null };
   } catch (error) {
-    console.error('Error fetching active pricing plans:', error);
+    console.error('Error fetching active FAQs:', error);
     return { data: null, error };
   }
 };
 
-// Get pricing plan by ID
-export const getPricingPlanById = async (id) => {
+// Get FAQ by ID
+export const getFAQById = async (id) => {
   try {
     const { data, error } = await supabase
-      .from('pricing_plans')
+      .from('faqs')
       .select('*')
       .eq('id', id)
       .single();
@@ -52,44 +51,34 @@ export const getPricingPlanById = async (id) => {
     if (error) throw error;
     return { data, error: null };
   } catch (error) {
-    console.error('Error fetching pricing plan:', error);
+    console.error('Error fetching FAQ:', error);
     return { data: null, error };
   }
 };
 
-// Create pricing plan
-export const createPricingPlan = async (planData) => {
+// Create new FAQ
+export const createFAQ = async (faqData) => {
   try {
-    const plan = {
-      ...planData,
-      updated_at: new Date().toISOString(),
-    };
-
     const { data, error } = await supabase
-      .from('pricing_plans')
-      .insert([plan])
+      .from('faqs')
+      .insert([faqData])
       .select()
       .single();
 
     if (error) throw error;
     return { data, error: null };
   } catch (error) {
-    console.error('Error creating pricing plan:', error);
+    console.error('Error creating FAQ:', error);
     return { data: null, error };
   }
 };
 
-// Update pricing plan
-export const updatePricingPlan = async (id, planData) => {
+// Update FAQ
+export const updateFAQ = async (id, faqData) => {
   try {
-    const updates = {
-      ...planData,
-      updated_at: new Date().toISOString(),
-    };
-
     const { data, error } = await supabase
-      .from('pricing_plans')
-      .update(updates)
+      .from('faqs')
+      .update({ ...faqData, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
@@ -97,32 +86,32 @@ export const updatePricingPlan = async (id, planData) => {
     if (error) throw error;
     return { data, error: null };
   } catch (error) {
-    console.error('Error updating pricing plan:', error);
+    console.error('Error updating FAQ:', error);
     return { data: null, error };
   }
 };
 
-// Delete pricing plan
-export const deletePricingPlan = async (id) => {
+// Delete FAQ
+export const deleteFAQ = async (id) => {
   try {
     const { error } = await supabase
-      .from('pricing_plans')
+      .from('faqs')
       .delete()
       .eq('id', id);
 
     if (error) throw error;
-    return { error: null };
+    return { data: true, error: null };
   } catch (error) {
-    console.error('Error deleting pricing plan:', error);
-    return { error };
+    console.error('Error deleting FAQ:', error);
+    return { data: null, error };
   }
 };
 
-// Toggle pricing plan status
-export const togglePricingPlanStatus = async (id, isActive) => {
+// Toggle FAQ active status
+export const toggleFAQStatus = async (id, isActive) => {
   try {
     const { data, error } = await supabase
-      .from('pricing_plans')
+      .from('faqs')
       .update({ is_active: isActive, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
@@ -131,7 +120,7 @@ export const togglePricingPlanStatus = async (id, isActive) => {
     if (error) throw error;
     return { data, error: null };
   } catch (error) {
-    console.error('Error toggling pricing plan status:', error);
+    console.error('Error toggling FAQ status:', error);
     return { data: null, error };
   }
 };
