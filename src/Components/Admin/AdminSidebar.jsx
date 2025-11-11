@@ -65,7 +65,6 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
       submenu: [
         { name: "Room Types", icon: FaHotel, path: "/admin/rooms/types" },
         { name: "Rate Plans", icon: FaDollarSign, path: "/admin/rooms/rate-plans" },
-        { name: "Rates Calendar", icon: FaCalendarAlt, path: "/admin/rooms/rates" },
         { name: "Availability", icon: FaListAlt, path: "/admin/rooms/availability" },
       ],
     },

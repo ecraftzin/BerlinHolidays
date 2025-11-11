@@ -5,6 +5,7 @@ import { IoMdClose } from "react-icons/io";
 import { BiChevronDown, BiSun } from "react-icons/bi";
 import { IoMoonSharp } from "react-icons/io5";
 import { useEffect, useState } from "react";
+import { useBookingModal } from "../../context/BookingModalContext";
 
 const Navbar = () => {
   // modal openar
@@ -18,6 +19,9 @@ const Navbar = () => {
   // background color add and remover
   const navbarBgColor =
     scrollPosition > 100 ? "lg:bg-lightBlack" : "lg:bg-transparent";
+
+  // Booking modal
+  const { openBookingModal } = useBookingModal();
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);
@@ -304,9 +308,9 @@ const Navbar = () => {
                 />
               )}
             </span>
-            <Link to="/find_room">
-              <button className="btn-secondary ">Booking Online</button>
-            </Link>
+            <button onClick={openBookingModal} className="btn-secondary">
+              Booking Online
+            </button>
             <Link to="/login" className="ml-3 cursor-pointer group" title="Login">
               <FaUserCircle
                 className="text-white group-hover:scale-110 transition-all duration-300"

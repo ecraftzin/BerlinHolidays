@@ -8,6 +8,8 @@ import {
   FaCheckCircle,
   FaSave,
   FaPercentage,
+  FaImage,
+  FaTimes,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import {
@@ -16,6 +18,7 @@ import {
   updatePricingPlan,
   deletePricingPlan,
 } from "../../services";
+import { uploadImage, deleteImage } from "../../services/storageService";
 
 const PricingPlans = () => {
   const [showModal, setShowModal] = useState(false);
@@ -28,7 +31,12 @@ const PricingPlans = () => {
     duration: "",
     includes: "",
     price: "",
+    image_url: "",
   });
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Fetch pricing plans on component mount
   useEffect(() => {
@@ -53,7 +61,10 @@ const PricingPlans = () => {
       duration: plan.duration || "",
       includes: plan.includes || "",
       price: plan.price || "",
+      image_url: plan.image_url || "",
     });
+    setImagePreview(plan.image_url || null);
+    setImageFile(null);
     setShowModal(true);
   };
 
@@ -87,7 +98,10 @@ const PricingPlans = () => {
       duration: "",
       includes: "",
       price: "",
+      image_url: "",
     });
+    setImageFile(null);
+    setImagePreview(null);
   };
 
   const handleInputChange = (e) => {
@@ -98,6 +112,43 @@ const PricingPlans = () => {
     }));
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+      if (!validTypes.includes(file.type)) {
+        Swal.fire("Error", "Please upload a valid image file (JPEG, PNG, WebP, or GIF)", "error");
+        return;
+      }
+
+      // Validate file size (5MB max)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        Swal.fire("Error", "Image size should be less than 5MB", "error");
+        return;
+      }
+
+      setImageFile(file);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    setFormData((prev) => ({
+      ...prev,
+      image_url: "",
+    }));
+  };
+
   const handleSavePlan = async (isDraft = false) => {
     // Validation
     if (!formData.name || !formData.duration || !formData.includes || !formData.price) {
@@ -105,31 +156,63 @@ const PricingPlans = () => {
       return;
     }
 
-    const planData = {
-      name: formData.name,
-      duration: formData.duration,
-      includes: formData.includes,
-      price: formData.price,
-      is_active: !isDraft,
-    };
+    try {
+      let imageUrl = formData.image_url;
 
-    let result;
-    if (selectedPlan) {
-      result = await updatePricingPlan(selectedPlan.id, planData);
-    } else {
-      result = await createPricingPlan(planData);
-    }
+      // Upload image if a new file is selected
+      if (imageFile) {
+        setUploadingImage(true);
+        const uploadResult = await uploadImage(imageFile, 'pricing-images', 'plans');
 
-    if (result.error) {
-      Swal.fire("Error", "Failed to save pricing plan", "error");
-    } else {
-      Swal.fire(
-        "Success!",
-        `Pricing plan ${selectedPlan ? "updated" : "created"} successfully!`,
-        "success"
-      );
-      handleCloseModal();
-      fetchPricingPlans();
+        if (uploadResult.error) {
+          Swal.fire("Error", "Failed to upload image", "error");
+          setUploadingImage(false);
+          return;
+        }
+
+        imageUrl = uploadResult.data.publicUrl;
+
+        // Delete old image if updating
+        if (selectedPlan && selectedPlan.image_url) {
+          // Extract file path from URL
+          const oldPath = selectedPlan.image_url.split('/').slice(-2).join('/');
+          await deleteImage(oldPath, 'pricing-images');
+        }
+
+        setUploadingImage(false);
+      }
+
+      const planData = {
+        name: formData.name,
+        duration: formData.duration,
+        includes: formData.includes,
+        price: formData.price,
+        image_url: imageUrl,
+        is_active: !isDraft,
+      };
+
+      let result;
+      if (selectedPlan) {
+        result = await updatePricingPlan(selectedPlan.id, planData);
+      } else {
+        result = await createPricingPlan(planData);
+      }
+
+      if (result.error) {
+        Swal.fire("Error", "Failed to save pricing plan", "error");
+      } else {
+        Swal.fire(
+          "Success!",
+          `Pricing plan ${selectedPlan ? "updated" : "created"} successfully!`,
+          "success"
+        );
+        handleCloseModal();
+        fetchPricingPlans();
+      }
+    } catch (error) {
+      console.error("Error saving pricing plan:", error);
+      Swal.fire("Error", "An unexpected error occurred", "error");
+      setUploadingImage(false);
     }
   };
 
@@ -148,7 +231,9 @@ const PricingPlans = () => {
         <button
           onClick={() => {
             setSelectedPlan(null);
-            setFormData({ name: "", duration: "", includes: "", price: "" });
+            setFormData({ name: "", duration: "", includes: "", price: "", image_url: "" });
+            setImageFile(null);
+            setImagePreview(null);
             setShowModal(true);
           }}
           className="mt-4 md:mt-0 px-6 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md flex items-center space-x-2"
@@ -176,7 +261,9 @@ const PricingPlans = () => {
           <button
             onClick={() => {
               setSelectedPlan(null);
-              setFormData({ name: "", duration: "", includes: "", price: "" });
+              setFormData({ name: "", duration: "", includes: "", price: "", image_url: "" });
+              setImageFile(null);
+              setImagePreview(null);
               setShowModal(true);
             }}
             className="px-6 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md"
@@ -194,6 +281,17 @@ const PricingPlans = () => {
             key={plan.id}
             className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-shadow"
           >
+            {/* Plan Image */}
+            {plan.image_url && (
+              <div className="w-full h-48 overflow-hidden">
+                <img
+                  src={plan.image_url}
+                  alt={plan.name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
             <div className="p-6" style={{ backgroundColor: "#f7f5f2" }}>
               <div className="flex items-center justify-between mb-2">
                 <FaTag className="text-2xl" style={{ color: "#c49e72" }} />
@@ -331,31 +429,83 @@ const PricingPlans = () => {
                       placeholder="e.g., ₹6000/person or ₹15000/couple"
                     />
                   </div>
+
+                  {/* Image Upload Field */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
+                      Plan Image
+                    </label>
+
+                    {imagePreview ? (
+                      <div className="relative">
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="w-full h-48 object-cover rounded-lg border-2"
+                          style={{ borderColor: "#c49e72" }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-all shadow-lg"
+                        >
+                          <FaTimes />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-opacity-70 transition-all"
+                        style={{ borderColor: "#c49e72" }}
+                      >
+                        <input
+                          type="file"
+                          id="image-upload"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className="cursor-pointer flex flex-col items-center"
+                        >
+                          <FaImage className="text-4xl mb-2" style={{ color: "#c49e72" }} />
+                          <span className="text-sm font-Lora text-gray-600">
+                            Click to upload image
+                          </span>
+                          <span className="text-xs font-Lora text-gray-400 mt-1">
+                            JPEG, PNG, WebP or GIF (Max 5MB)
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={() => handleSavePlan(false)}
-                    className="flex-1 px-6 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md"
+                    disabled={uploadingImage}
+                    className="flex-1 px-6 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ backgroundColor: "#006938" }}
                   >
                     <FaCheckCircle className="inline mr-2" />
-                    Save & Publish
+                    {uploadingImage ? "Uploading..." : "Save & Publish"}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSavePlan(true)}
-                    className="flex-1 px-6 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md"
+                    disabled={uploadingImage}
+                    className="flex-1 px-6 py-3 rounded-lg text-white font-Lora font-semibold hover:opacity-90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{ backgroundColor: "#c49e72" }}
                   >
                     <FaSave className="inline mr-2" />
-                    Save as Draft
+                    {uploadingImage ? "Uploading..." : "Save as Draft"}
                   </button>
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="px-6 py-3 rounded-lg border-2 border-gray-300 text-gray-600 font-Lora font-semibold hover:bg-gray-50 transition-all"
+                    disabled={uploadingImage}
+                    className="px-6 py-3 rounded-lg border-2 border-gray-300 text-gray-600 font-Lora font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Cancel
                   </button>

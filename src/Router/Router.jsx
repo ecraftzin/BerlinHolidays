@@ -42,7 +42,6 @@ import BlogManagement from "../Pages/AdminDashboard/BlogManagement";
 import SEOManagement from "../Pages/AdminDashboard/SEOManagement";
 import RoomTypes from "../Pages/AdminDashboard/RoomTypes";
 import RatePlans from "../Pages/AdminDashboard/RatePlans";
-import RatesCalendar from "../Pages/AdminDashboard/RatesCalendar";
 import RoomAvailability from "../Pages/AdminDashboard/RoomAvailability";
 import PricingPlans from "../Pages/AdminDashboard/PricingPlans";
 import SpecialOffers from "../Pages/AdminDashboard/SpecialOffers";
@@ -391,10 +390,6 @@ const router = createBrowserRouter([
       {
         path: "rooms/rate-plans",
         element: <RatePlans />,
-      },
-      {
-        path: "rooms/rates",
-        element: <RatesCalendar />,
       },
       {
         path: "rooms/availability",

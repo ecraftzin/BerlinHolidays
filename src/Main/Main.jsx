@@ -7,12 +7,12 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import HelmetChanger from "../Shared/Helmet/Helmet";
+import { BookingModalProvider } from "../context/BookingModalContext";
+import BookingModal from "../Components/BookingForm/BookingModal";
+import { useBookingModal } from "../context/BookingModalContext";
 
-const Main = () => {
-  useEffect(() => {
-    AOS.init();
-    AOS.refresh();
-  }, []);
+const MainContent = () => {
+  const { isBookingModalOpen, closeBookingModal } = useBookingModal();
 
   return (
     <>
@@ -21,10 +21,24 @@ const Main = () => {
       <GoToTop/>
       <Navbar/>
       <div>
-      <Outlet/>
+        <Outlet/>
       </div>
       <Footer/>
+      <BookingModal isOpen={isBookingModalOpen} onClose={closeBookingModal} />
     </>
+  );
+};
+
+const Main = () => {
+  useEffect(() => {
+    AOS.init();
+    AOS.refresh();
+  }, []);
+
+  return (
+    <BookingModalProvider>
+      <MainContent />
+    </BookingModalProvider>
   );
 };
 

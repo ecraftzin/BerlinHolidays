@@ -1,6 +1,6 @@
 // src/Components/Admin/AdminHeader.jsx
 import React from "react";
-import { FaBars, FaBell, FaUserCircle, FaMoon, FaSun } from "react-icons/fa";
+import { FaBars, FaBell, FaUserCircle } from "react-icons/fa";
 
 const AdminHeader = ({ toggleSidebar, isDarkMode, toggleDarkMode }) => {
   const currentUser = JSON.parse(localStorage.getItem("signupData")) || {
@@ -45,18 +45,6 @@ const AdminHeader = ({ toggleSidebar, isDarkMode, toggleDarkMode }) => {
 
         {/* Right Section - Actions */}
         <div className="flex items-center space-x-3">
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className={`p-2 rounded-lg transition-colors ${
-              isDarkMode ? "hover:bg-gray-700" : "hover:bg-gray-100"
-            }`}
-            style={{ color: "#c49e72" }}
-            title={isDarkMode ? "Light Mode" : "Dark Mode"}
-          >
-            {isDarkMode ? <FaSun size={18} /> : <FaMoon size={18} />}
-          </button>
-
           {/* Notifications */}
           <button
             className={`relative p-2 rounded-lg transition-colors ${

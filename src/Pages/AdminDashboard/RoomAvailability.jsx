@@ -160,43 +160,25 @@ const RoomAvailability = () => {
   const handleManageAvailability = async (room) => {
     setSelectedRoom(room);
 
-    // Check if we have previously used dates for this room
-    const previousDates = lastUsedDates[room.id];
+    // Check if we have previously saved data for this room
+    const previousData = lastUsedDates[room.id];
 
-    if (previousDates && previousDates.from_date && previousDates.to_date) {
-      // Load the existing availability data for these dates FIRST
-      const result = await getRoomAvailabilityForDateRange(room.id, previousDates.from_date, previousDates.to_date);
-
-      let initialFormData;
-      if (result.data && result.data.length > 0) {
-        // Use the saved data from database
-        const firstRecord = result.data[0];
-        initialFormData = {
-          from_date: previousDates.from_date,
-          to_date: previousDates.to_date,
-          available_rooms: firstRecord.available_rooms || 0,
-          blocked_rooms: firstRecord.blocked_rooms || 0,
-          minimum_stay: firstRecord.minimum_stay || 1,
-          reason: firstRecord.reason || "",
-          notes: firstRecord.notes || "",
-        };
-      } else {
-        // No data found, use defaults
-        initialFormData = {
-          from_date: previousDates.from_date,
-          to_date: previousDates.to_date,
-          available_rooms: room.total_rooms || 0,
-          blocked_rooms: 0,
-          minimum_stay: 1,
-          reason: "",
-          notes: "",
-        };
-      }
+    if (previousData && previousData.from_date && previousData.to_date) {
+      // Use the previously saved data directly
+      const initialFormData = {
+        from_date: previousData.from_date,
+        to_date: previousData.to_date,
+        available_rooms: previousData.available_rooms !== undefined ? previousData.available_rooms : room.total_rooms || 0,
+        blocked_rooms: previousData.blocked_rooms !== undefined ? previousData.blocked_rooms : 0,
+        minimum_stay: previousData.minimum_stay || 1,
+        reason: previousData.reason || "",
+        notes: previousData.notes || "",
+      };
 
       setFormData(initialFormData);
       setShowAvailabilityModal(true);
     } else {
-      // No previous dates, initialize with defaults
+      // No previous data, load from database or use defaults
       const initialFormData = {
         from_date: "",
         to_date: "",
@@ -213,17 +195,7 @@ const RoomAvailability = () => {
   };
 
   const handleCloseModal = () => {
-    // Save the current dates for this room before closing
-    if (selectedRoom && formData.from_date && formData.to_date) {
-      setLastUsedDates(prev => ({
-        ...prev,
-        [selectedRoom.id]: {
-          from_date: formData.from_date,
-          to_date: formData.to_date,
-        }
-      }));
-    }
-
+    // Don't save on close - only save on successful submit
     setShowAvailabilityModal(false);
     setSelectedRoom(null);
     setFormData({
@@ -247,6 +219,9 @@ const RoomAvailability = () => {
       Swal.fire("Error", "No room selected", "error");
       return;
     }
+
+    // Save current form data to use after successful save
+    const currentFormData = { ...formData };
 
     try {
       // Generate dates between from_date and to_date
@@ -290,6 +265,20 @@ const RoomAvailability = () => {
 
       // Update the availability display for this specific room
       await updateRoomAvailabilityDisplay(selectedRoom);
+
+      // Update lastUsedDates with the newly saved data
+      setLastUsedDates(prev => ({
+        ...prev,
+        [selectedRoom.id]: {
+          from_date: currentFormData.from_date,
+          to_date: currentFormData.to_date,
+          available_rooms: currentFormData.available_rooms,
+          blocked_rooms: currentFormData.blocked_rooms,
+          minimum_stay: currentFormData.minimum_stay,
+          reason: currentFormData.reason,
+          notes: currentFormData.notes,
+        }
+      }));
 
       Swal.fire("Success", "Availability updated successfully!", "success");
       handleCloseModal();
