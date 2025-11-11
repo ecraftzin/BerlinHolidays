@@ -1,7 +1,28 @@
+import { useState, useEffect } from "react";
 import { HiArrowLongRight } from "react-icons/hi2";
 import { Link } from "react-router-dom";
+import { getPublishedServices } from "../../services/servicesService";
 
 const Facilities = () => {
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    setLoading(true);
+    const { data, error } = await getPublishedServices();
+    if (error) {
+      console.error("Error fetching services:", error);
+      setServices([]);
+    } else {
+      setServices(data || []);
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="dark:bg-mediumBlack ">
       <section className="Container py-[120px] md:py-0 md:pb-[120px] lg:py-[60px]">
@@ -27,158 +48,99 @@ const Facilities = () => {
         </div>
 
         {/* ================== SERVICES ================== */}
-        <div>
-          {/* 01 */}
-          <hr className="text-[#e8e8e8] dark:text-[#383838] my-10" />
-          <div
-            className="grid grid-cols-1 md:grid-cols-2"
-            data-aos="zoom-in-up"
-            data-aos-duration="1000"
-          >
-            <div className="relative w-full md:pr-[30px]">
-              <img
-                src="/images/home-1/gymwellness.png"
-                alt="Gym & Wellness"
-                className="w-full h-full"
-              />
-              <div className="hidden md:block absolute -top-[0px] md:-right-[12%] -right-[7%]">
-                <h2 className="text-3xl md:text-4xl lg:text-[40px] text-khaki">01</h2>
-              </div>
-            </div>
-
-            <div className="relative font-Garamond md:ml-[60px] lg:ml-[107px] mt-3 md:mt-0">
-              <h4 className="text-base font-semibold text-khaki uppercase pb-[6px]">
-                Fitness
-              </h4>
-              <h1 className="text-2xl md:text-3xl font-semibold text-lightBlack dark:text-white">
-                <Link to="/services">Gym & Wellness Center</Link>
-              </h1>
-              <p className="font-Lora text-sm sm:text-base text-gray dark:text-lightGray leading-[26px] my-10">
-                Stay energized during your vacation with our
-                state-of-the-art fitness studio. Equipped with
-                modern training machines and professional guidance,
-                our gym offers the perfect balance of workout and
-                relaxation. Whether it’s yoga, cardio, or weights — we
-                help you keep your wellness goals on track.
-              </p>
-              <Link to="/services">
-                <HiArrowLongRight size={30} className="text-gray hover:text-khaki" />
-              </Link>
-            </div>
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-khaki"></div>
           </div>
-
-          {/* 02 */}
-          <hr className="text-[#e8e8e8] dark:text-[#383838] my-10" />
-          <div
-            className="grid grid-cols-1 md:grid-cols-2"
-            data-aos="zoom-in-up"
-            data-aos-duration="1000"
-          >
-            <div className="font-Garamond md:mr-[2px] lg:mr-[110px]">
-              <h4 className="text-base font-semibold text-khaki uppercase pb-[6px]">
-                LEISURE
-              </h4>
-              <h1 className="text-2xl md:text-3xl font-semibold text-lightBlack dark:text-white">
-                <Link to="/services">Indoor Swimming Pool</Link>
-              </h1>
-              <p className="font-Lora text-sm sm:text-base text-gray dark:text-lightGray leading-[26px] my-10">
-                Dive into luxury at our temperature-controlled indoor pool.
-                Designed for both relaxation and recreation, the pool area
-                provides a serene space to unwind, swim a few laps, or simply
-                float away your stress amidst calming ambiance and soft lighting.
-              </p>
-              <Link to="/services">
-                <HiArrowLongRight size={30} className="text-gray hover:text-khaki" />
-              </Link>
-            </div>
-
-            <div className="w-full md:pl-[30px] relative mt-5 md:mt-0">
-              <img
-                src="/images/home-1/indoorpool.png"
-                alt="Indoor Pool"
-                className="w-full h-full"
-              />
-              <div className="hidden md:block absolute -top-[0px] -left-[12%]">
-                <h1 className="text-3xl md:text-4xl lg:text-[40px] text-khaki">02</h1>
-              </div>
-            </div>
+        ) : services.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-gray-600 dark:text-gray-400 font-Lora text-lg">
+              No services available at the moment.
+            </p>
           </div>
+        ) : (
+          <div>
+            {services.map((service, index) => {
+              const isEven = index % 2 === 0;
+              return (
+                <div key={service.id}>
+                  <hr className="text-[#e8e8e8] dark:text-[#383838] my-10" />
+                  <div
+                    className="grid grid-cols-1 md:grid-cols-2"
+                    data-aos="zoom-in-up"
+                    data-aos-duration="1000"
+                  >
+                    {isEven ? (
+                      <>
+                        <div className="relative w-full md:pr-[30px]">
+                          {service.image && (
+                            <img
+                              src={service.image}
+                              alt={service.heading}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          <div className="hidden md:block absolute -top-[0px] md:-right-[12%] -right-[7%]">
+                            <h2 className="text-3xl md:text-4xl lg:text-[40px] text-khaki">
+                              {String(service.number).padStart(2, '0')}
+                            </h2>
+                          </div>
+                        </div>
 
-          {/* 03 */}
-          <hr className="text-[#e8e8e8] dark:text-[#383838] my-10" />
-          <div
-            className="grid grid-cols-1 md:grid-cols-2"
-            data-aos="zoom-in-up"
-            data-aos-duration="1000"
-          >
-            <div className="relative md:pr-[30px]">
-              <img
-                src="/images/home-1/restaurantlounge.png"
-                alt="Restaurant & Lounge"
-                className="w-full h-full"
-              />
-              <div className="hidden md:block absolute -top-[0px] md:-right-[12%] -right-[7%]">
-                <h2 className="text-3xl md:text-4xl lg:text-[40px] text-khaki">03</h2>
-              </div>
-            </div>
+                        <div className="relative font-Garamond md:ml-[60px] lg:ml-[107px] mt-3 md:mt-0">
+                          <h4 className="text-base font-semibold text-khaki uppercase pb-[6px]">
+                            {service.category}
+                          </h4>
+                          <h1 className="text-2xl md:text-3xl font-semibold text-lightBlack dark:text-white">
+                            <Link to="/services">{service.heading}</Link>
+                          </h1>
+                          <p className="font-Lora text-sm sm:text-base text-gray dark:text-lightGray leading-[26px] my-10">
+                            {service.description}
+                          </p>
+                          <Link to="/services">
+                            <HiArrowLongRight size={30} className="text-gray hover:text-khaki" />
+                          </Link>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="font-Garamond md:mr-[2px] lg:mr-[110px]">
+                          <h4 className="text-base font-semibold text-khaki uppercase pb-[6px]">
+                            {service.category}
+                          </h4>
+                          <h1 className="text-2xl md:text-3xl font-semibold text-lightBlack dark:text-white">
+                            <Link to="/services">{service.heading}</Link>
+                          </h1>
+                          <p className="font-Lora text-sm sm:text-base text-gray dark:text-lightGray leading-[26px] my-10">
+                            {service.description}
+                          </p>
+                          <Link to="/services">
+                            <HiArrowLongRight size={30} className="text-gray hover:text-khaki" />
+                          </Link>
+                        </div>
 
-            <div className="font-Garamond md:ml-[60px] lg:ml-[107px] mt-3 md:mt-0 relative">
-              <h4 className="text-base font-semibold text-khaki uppercase pb-[6px]">
-                DINING
-              </h4>
-              <h1 className="text-2xl md:text-3xl font-semibold text-lightBlack dark:text-white">
-                <Link to="/services">The Restaurant & Lounge</Link>
-              </h1>
-              <p className="font-Lora text-sm sm:text-base text-gray dark:text-lightGray leading-[26px] my-10">
-                Savor world-class cuisine at our signature restaurant,
-                where international flavors meet local freshness. From
-                lavish breakfast spreads to candlelight dinners, every
-                meal is crafted by expert chefs to create a memorable
-                dining experience.
-              </p>
-              <Link to="/services">
-                <HiArrowLongRight size={30} className="text-gray hover:text-khaki" />
-              </Link>
-            </div>
+                        <div className="w-full md:pl-[30px] relative mt-5 md:mt-0">
+                          {service.image && (
+                            <img
+                              src={service.image}
+                              alt={service.heading}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          <div className="hidden md:block absolute -top-[0px] -left-[12%]">
+                            <h1 className="text-3xl md:text-4xl lg:text-[40px] text-khaki">
+                              {String(service.number).padStart(2, '0')}
+                            </h1>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          {/* 04 */}
-          <hr className="text-[#e8e8e8] dark:text-[#383838] my-10" />
-          <div
-            className="grid grid-cols-1 md:grid-cols-2"
-            data-aos="zoom-in-up"
-            data-aos-duration="1000"
-          >
-            <div className="font-Garamond md:mr-[2px] lg:mr-[110px]">
-              <h4 className="text-base font-semibold text-khaki uppercase pb-[6px]">
-                EXPERIENCE
-              </h4>
-              <h1 className="text-2xl md:text-3xl font-semibold text-lightBlack dark:text-white">
-                <Link to="/services">Adventure & Recreation Zone</Link>
-              </h1>
-              <p className="font-Lora text-sm sm:text-base text-gray dark:text-lightGray leading-[26px] my-10">
-                Explore more than just relaxation — discover adventure.
-                From guided nature walks to outdoor sports and local cultural
-                experiences, our resort ensures every guest finds their perfect
-                blend of thrill and tranquility.
-              </p>
-              <Link to="/services">
-                <HiArrowLongRight size={30} className="text-gray hover:text-khaki" />
-              </Link>
-            </div>
-
-            <div className="w-full relative md:pl-[30px] mt-5 md:mt-0">
-              <img
-                src="/images/home-1/adventure.png"
-                alt="Adventure"
-                className="w-full h-full "
-              />
-              <div className="hidden md:block absolute -top-[0px] -left-[12%]">
-                <h1 className="text-3xl md:text-4xl lg:text-[40px] text-khaki">04</h1>
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
         {/* ================== /SERVICES ================== */}
       </section>
     </div>
@@ -186,3 +148,4 @@ const Facilities = () => {
 };
 
 export default Facilities;
+

@@ -6,13 +6,13 @@ export default function Accordion({ children, title, id, active = false }) {
 
   useEffect(() => {
     setAccordionOpen(active);
-  }, []);
+  }, [active]);
 
   return (
     <div className="py-2">
       <h2>
         <button
-          className="flex items-center justify-between w-full text-left font-semibold font-Garamond hover:bg-khaki focus:bg-khaki p-5 group bg-normalBlack"
+          className="flex items-center justify-between w-full text-left font-semibold font-Garamond hover:bg-khaki focus:bg-khaki p-5 group bg-normalBlack dark:bg-normalBlack transition-colors duration-300"
           onClick={(e) => {
             e.preventDefault();
             setAccordionOpen(!accordionOpen);
@@ -20,7 +20,7 @@ export default function Accordion({ children, title, id, active = false }) {
           aria-expanded={accordionOpen}
           aria-controls={`accordion-text-${id}`}
         >
-          <span className="text-white text-base sm:text-lg md:text-xl 2xl:text-[22px] ">
+          <span className="text-white text-base sm:text-lg md:text-xl 2xl:text-[22px]">
             {title}
           </span>
           <svg
@@ -34,7 +34,7 @@ export default function Accordion({ children, title, id, active = false }) {
               width="16"
               height="2"
               rx="1"
-              className={`ttransform origin-center transition duration-200 ease-out ${
+              className={`transform origin-center transition duration-200 ease-out ${
                 accordionOpen && "!rotate-180"
               }`}
             />
@@ -54,14 +54,14 @@ export default function Accordion({ children, title, id, active = false }) {
         id={`accordion-text-${id}`}
         role="region"
         aria-labelledby={`accordion-title-${id}`}
-        className={`grid text-sm sm:text-base font-Lora font-normal leading-[26px] text-white overflow-hidden transition-all duration-300 ease-in-out px-5 bg-normalBlack ${
+        className={`grid text-sm sm:text-base font-Lora font-normal leading-[26px] text-white overflow-hidden transition-all duration-300 ease-in-out px-5 bg-normalBlack dark:bg-normalBlack ${
           accordionOpen
-            ? "grid-rows-[1fr] opacity-100"
+            ? "grid-rows-[1fr] opacity-100 pb-2"
             : "grid-rows-[0fr] opacity-0"
         }`}
       >
         <div className="overflow-hidden">
-          <p className="py-4 text-sm sm:text-base md:text-lg lg:text-xl 2xl:text-[22px] font-Garamond">
+          <p className="py-4 text-sm sm:text-base md:text-lg lg:text-xl 2xl:text-[22px] font-Garamond text-lightGray">
             {children}
           </p>
         </div>

@@ -49,6 +49,7 @@ import SpecialOffers from "../Pages/AdminDashboard/SpecialOffers";
 import FAQManagement from "../Pages/AdminDashboard/FAQManagement";
 import RestaurantCategories from "../Pages/AdminDashboard/RestaurantCategories";
 import RestaurantMenu from "../Pages/AdminDashboard/RestaurantMenu";
+import ServicesManagement from "../Pages/AdminDashboard/ServicesManagement";
 
 // Starting React Router.
 const router = createBrowserRouter([
@@ -418,6 +419,10 @@ const router = createBrowserRouter([
       {
         path: "restaurant/menu-items",
         element: <RestaurantMenu />,
+      },
+      {
+        path: "services",
+        element: <ServicesManagement />,
       },
     ],
   },

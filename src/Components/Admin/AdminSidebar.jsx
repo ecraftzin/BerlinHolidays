@@ -19,6 +19,7 @@ import {
   FaDollarSign,
   FaListAlt,
   FaQuestionCircle,
+  FaCog,
 } from "react-icons/fa";
 
 const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
@@ -82,6 +83,11 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
       name: "FAQ",
       icon: FaQuestionCircle,
       path: "/admin/faq",
+    },
+    {
+      name: "Services",
+      icon: FaCog,
+      path: "/admin/services",
     },
     {
       name: "Restaurant",

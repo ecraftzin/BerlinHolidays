@@ -4,8 +4,9 @@ import { Link } from "react-router-dom";
 import "../../Components4/Testimonial/testimonials.css";
 import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BiChevronDown } from "react-icons/bi";
+import { getActiveRoomTypes } from "../../services";
 
 // import required modules
 
@@ -17,6 +18,23 @@ const Rooms = () => {
   const [children, setChildren] = useState(0);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loaded] = useState(false);
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRooms();
+  }, []);
+
+  const fetchRooms = async () => {
+    setLoading(true);
+    const { data, error } = await getActiveRoomTypes();
+
+    if (!error && data) {
+      setRooms(data.slice(0, 6)); // Show up to 6 rooms
+    }
+
+    setLoading(false);
+  };
 
   const [sliderRef, instanceRef] = useKeenSlider({
     breakpoints: {
@@ -224,248 +242,100 @@ const Rooms = () => {
           {/* Rooms Slider Container */}
 
           <div className="relative">
-            <div className="mt-14 2xl:mt-[60px] keen-slider " ref={sliderRef}>
-              {/* slide - 1 */}
-              <div className="keen-slider__slide number-slide1 ">
-                <div data-aos="fade-up-left" data-aos-duration="1000">
-                  <div className="overflow-x-hidden 3xl:w-[410px] group relative">
-                    <div className="relative">
-                      <div className="overflow-hidden">
-                        <img
-                          src="/images/home-1/room1home.png "
-                          className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
-                          alt=""
-                        />
-                      </div>
-                      <div className="">
-                        <Link to={"/room_details"}>
-                          <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white  group-hover:left-0 transition-all duration-300 hover:bg-khaki">
-                            View Details{" "}
-                            <BsArrowRight className="w-4 h-4 ml-2  text-white" />{" "}
-                          </button>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="font-Garamond">
-                      <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm  items-center justify-center text-white  absolute top-[10px] right-[10px] font-Lora font-normal leading-[26px]">
-                        <span className="">$560</span>
-                        <span className="mx-2">|</span>
-                        <span>Night</span>
-                      </div>
+            {loading ? (
+              <div className="text-center py-20">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-khaki"></div>
+                <p className="mt-4 text-gray dark:text-lightGray font-Lora">Loading rooms...</p>
+              </div>
+            ) : rooms.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-gray dark:text-lightGray font-Lora text-lg">No rooms available yet.</p>
+              </div>
+            ) : (
+              <div className="mt-14 2xl:mt-[60px] keen-slider " ref={sliderRef}>
+                {rooms.map((roomData, index) => {
+                  const aosEffect = index % 3 === 0 ? "fade-up-left" : index % 3 === 1 ? "fade-up" : "fade-up-right";
+                  const roomImage = roomData.images && roomData.images.length > 0
+                    ? roomData.images[0]
+                    : "/images/home-1/room1home.png";
 
-                      <div className=" border-[1px] border-[#e8e8e8] dark:border-[#424242] border-t-0">
-                        <div className="py-6 px-[30px]">
-                          <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
-                            Luxury Room
-                          </h4>
-                          <Link to="/room">
-                            <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
-                              Double Suite Rooms
-                            </h2>
-                          </Link>
-                          <p className="text-sm font-normal text-gray  dark:text-lightGray font-Lora">
-                            1500 SQ.FT/Rooms
-                          </p>
-                        </div>
-                        <div className="  border-t-[1px] border-[#e8e8e8] dark:border-[#424242] py-5">
-                          <div className="px-[30px] flex items-center justify-between">
-                            <div className="">
-                              <span className="font-Lora text-base flex items-center ">
-                                <img
-                                  src="/images/home-1/room-bottom-icon.png"
-                                  alt=""
-                                />
-                                <span className="ml-[10px] text-gray dark:text-lightGray">
-                                  2 King Bed
-                                </span>
-                              </span>
+                  return (
+                    <div key={roomData.id} className="keen-slider__slide number-slide1 ">
+                      <div data-aos={aosEffect} data-aos-duration="1000">
+                        <div className="overflow-x-hidden 3xl:w-[410px] group relative">
+                          <div className="relative">
+                            <div className="overflow-hidden">
+                              <img
+                                src={roomImage}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
+                                alt={roomData.name}
+                                onError={(e) => {
+                                  e.target.src = "/images/home-1/room1home.png";
+                                }}
+                              />
                             </div>
-                            <span className="w-[1px] h-[25px] bg-[#ddd] dark:bg-gray"></span>
-                            <ul className="flex items-center text-khaki space-x-[5px]">
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                            </ul>
+                            <div className="">
+                              <Link to={`/room_details/${roomData.slug}`} state={{ roomData }}>
+                                <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white  group-hover:left-0 transition-all duration-300 hover:bg-khaki">
+                                  View Details{" "}
+                                  <BsArrowRight className="w-4 h-4 ml-2  text-white" />{" "}
+                                </button>
+                              </Link>
+                            </div>
+                          </div>
+                          <div className="font-Garamond">
+                            <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm  items-center justify-center text-white  absolute top-[10px] right-[10px] font-Lora font-normal leading-[26px]">
+                              <span className="">${roomData.base_price || 0}</span>
+                              <span className="mx-2">|</span>
+                              <span>Night</span>
+                            </div>
+
+                            <div className=" border-[1px] border-[#e8e8e8] dark:border-[#424242] border-t-0">
+                              <div className="py-6 px-[30px]">
+                                <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
+                                  {roomData.category_label || "Luxury Room"}
+                                </h4>
+                                <Link to={`/room_details/${roomData.slug}`} state={{ roomData }}>
+                                  <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
+                                    {roomData.name}
+                                  </h2>
+                                </Link>
+                                <p className="text-sm font-normal text-gray  dark:text-lightGray font-Lora">
+                                  {roomData.room_size ? `${roomData.room_size} SQ.FT/Rooms` : "Spacious Rooms"}
+                                </p>
+                              </div>
+                              <div className="  border-t-[1px] border-[#e8e8e8] dark:border-[#424242] py-5">
+                                <div className="px-[30px] flex items-center justify-between">
+                                  <div className="">
+                                    <span className="font-Lora text-base flex items-center ">
+                                      <img
+                                        src="/images/home-1/room-bottom-icon.png"
+                                        alt=""
+                                      />
+                                      <span className="ml-[10px] text-gray dark:text-lightGray">
+                                        {roomData.bed_type || "King Bed"}
+                                      </span>
+                                    </span>
+                                  </div>
+                                  <span className="w-[1px] h-[25px] bg-[#ddd] dark:bg-gray"></span>
+                                  <ul className="flex items-center text-khaki space-x-[5px]">
+                                    {[...Array(5)].map((_, i) => (
+                                      <li key={i}>
+                                        <FaStar />
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-              {/* slide - 2 */}
-              <div className="keen-slider__slide number-slide1 ">
-                <div data-aos="fade-up" data-aos-duration="1000">
-                  <div className=" 3xl:w-[410px] group relative">
-                    <div className="relative">
-                      <div className="overflow-hidden">
-                        <img
-                          src="/images/home-1/familyroom.png "
-                          className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
-                          alt=""
-                        />
-                      </div>
-                      <div className="">
-                        <Link to={"/room_details"}>
-                          <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white  group-hover:left-0 transition-all duration-300 hover:bg-khaki">
-                            View Details{" "}
-                            <BsArrowRight className="w-4 h-4 ml-2  text-white" />{" "}
-                          </button>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="font-Garamond">
-                      <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm  items-center justify-center font-Lora font-normal leading-[26px] text-white  absolute top-[10px] right-[10px] ">
-                        <span className="">$560</span>
-                        <span className="mx-2">|</span>
-                        <span>Night</span>
-                      </div>
-
-                      <div className=" border-[1px] border-[#e8e8e8] dark:border-[#424242] border-t-0">
-                        <div className="py-6 px-[30px]">
-                          <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
-                            Luxury Room
-                          </h4>
-                          <Link to="/room">
-                            <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
-                              Delux Family Rooms
-                            </h2>
-                          </Link>
-                          <p className="text-sm font-normal text-gray  dark:text-lightGray font-Lora">
-                            1500 SQ.FT/Rooms
-                          </p>
-                        </div>
-                        <div className="  border-t-[1px] border-[#e8e8e8] dark:border-[#424242] py-5">
-                          <div className="px-[30px] flex items-center justify-between">
-                            <div className="">
-                              <span className="font-Lora text-base flex items-center ">
-                                <img
-                                  src="/images/home-1/room-bottom-icon.png"
-                                  alt=""
-                                />
-                                <span className="ml-[10px] text-gray dark:text-lightGray">
-                                  2 King Bed
-                                </span>
-                              </span>
-                            </div>
-                            <span className="w-[1px] h-[25px] bg-[#ddd] dark:bg-gray"></span>
-                            <ul className="flex items-center text-khaki space-x-[5px]">
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              {/* slide - 3 */}
-              <div className="keen-slider__slide number-slide1 ">
-                <div data-aos="fade-up-right" data-aos-duration="1000">
-                  <div className=" 3xl:w-[410px] group relative">
-                    <div className="relative">
-                      <div className="overflow-hidden">
-                        <img
-                          src="/images/home-1/supriorbedroom.png "
-                          className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
-                          alt=""
-                        />
-                      </div>
-                      <div className="">
-                        <Link to={"/room_details"}>
-                          <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white  group-hover:left-0 transition-all duration-300 hover:bg-khaki">
-                            View Details{" "}
-                            <BsArrowRight className="w-4 h-4 ml-2  text-white" />{" "}
-                          </button>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="font-Garamond">
-                      <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm  items-center justify-center font-Lora font-normal leading-[26px] text-white  absolute top-[10px] right-[10px] ">
-                        <span className="">$560</span>
-                        <span className="mx-2">|</span>
-                        <span>Night</span>
-                      </div>
-
-                      <div className=" border-[1px] border-[#e8e8e8] dark:border-[#424242] border-t-0">
-                        <div className="py-6 px-[30px]">
-                          <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
-                            Luxury Room
-                          </h4>
-                          <Link to="/room">
-                            <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
-                              Suprior Bed Rooms
-                            </h2>
-                          </Link>
-                          <p className="text-sm font-normal text-gray  dark:text-lightGray font-Lora">
-                            1500 SQ.FT/Rooms
-                          </p>
-                        </div>
-                        <div className="  border-t-[1px] border-[#e8e8e8] dark:border-[#424242] py-5">
-                          <div className="px-[30px] flex items-center justify-between">
-                            <div className="">
-                              <span className="font-Lora text-base flex items-center ">
-                                <img
-                                  src="/images/home-1/room-bottom-icon.png"
-                                  alt=""
-                                />
-                                <span className="ml-[10px] text-gray dark:text-lightGray">
-                                  2 King Bed
-                                </span>
-                              </span>
-                            </div>
-                            <span className="w-[1px] h-[25px] bg-[#ddd] dark:bg-gray"></span>
-                            <ul className="flex items-center text-khaki space-x-[5px]">
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                              <li>
-                                <FaStar />
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
 
             {/* slider breckpoints */}
             <div className="mx-auto ">

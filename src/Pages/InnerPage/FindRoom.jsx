@@ -6,6 +6,8 @@ import { Link, useLocation } from "react-router-dom";
 import { BsArrowRight } from "react-icons/bs";
 import { MdEmail, MdOutlineShareLocation } from "react-icons/md";
 import { IoIosCall } from "react-icons/io";
+import Swal from "sweetalert2";
+import emailjs from "@emailjs/browser";
 
 const FindRoom = () => {
   //  room info
@@ -18,6 +20,13 @@ const FindRoom = () => {
   const [children, setChildren] = useState(0);
   const [selectedInDate, setSelectedInDate] = useState("");
   const [selectedOutDate, setSelectedOutDate] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleCheckInDate = (e) => {
     let newDate = e.target.value;
@@ -34,6 +43,133 @@ const FindRoom = () => {
     room,
     adult,
     children,
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.name.trim()) {
+      Swal.fire("Error", "Please enter your name", "error");
+      return;
+    }
+    if (!formData.email.trim()) {
+      Swal.fire("Error", "Please enter your email", "error");
+      return;
+    }
+    if (!formData.subject) {
+      Swal.fire("Error", "Please select a subject", "error");
+      return;
+    }
+    if (!formData.message.trim()) {
+      Swal.fire("Error", "Please enter your message", "error");
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      Swal.fire("Error", "Please enter a valid email address", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Get EmailJS configuration from environment variables
+      const emailJsServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+      const emailJsTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+      const emailJsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+      const contactEmail = import.meta.env.VITE_CONTACT_EMAIL;
+
+      // Check if EmailJS is configured
+      if (!emailJsServiceId || !emailJsTemplateId || !emailJsPublicKey || !contactEmail) {
+        Swal.fire({
+          title: "Setup Required",
+          html: `
+            <p>The contact form needs to be configured with EmailJS credentials.</p>
+            <p style="margin-top: 10px;">Please see <strong>SETUP_NOW.md</strong> for quick setup instructions.</p>
+            <p style="margin-top: 10px;">Or contact us directly at:</p>
+            <p style="margin-top: 5px;"><strong>berlinvayanad@gmail.com</strong></p>
+          `,
+          icon: "info",
+          confirmButtonColor: "#c49e72",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Prepare email parameters
+      const emailParams = {
+        from_name: formData.name,
+        from_email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        to_email: contactEmail,
+        submission_date: new Date().toLocaleString(),
+      };
+
+      // Send email via EmailJS
+      await emailjs.send(
+        emailJsServiceId,
+        emailJsTemplateId,
+        emailParams,
+        emailJsPublicKey
+      );
+
+      // Success
+      Swal.fire({
+        title: "Success!",
+        text: "Your message has been sent successfully. We'll get back to you soon!",
+        icon: "success",
+        confirmButtonColor: "#c49e72",
+      });
+
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (error) {
+      console.error("Error sending email:", error);
+
+      // Check if it's an EmailJS configuration error
+      if (error.text && error.text.includes('Public Key is invalid')) {
+        Swal.fire({
+          title: "Setup Required",
+          html: `
+            <p>EmailJS credentials need to be configured.</p>
+            <p style="margin-top: 10px;">📖 See <strong>SETUP_NOW.md</strong> for 5-minute setup guide.</p>
+            <p style="margin-top: 10px;">Or contact us directly at:</p>
+            <p style="margin-top: 5px;"><strong>berlinvayanad@gmail.com</strong></p>
+            <p style="margin-top: 5px;"><strong>+91 956 2312 019</strong></p>
+          `,
+          icon: "info",
+          confirmButtonColor: "#c49e72",
+        });
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: "Failed to send your message. Please try again later or contact us directly at berlinvayanad@gmail.com",
+          icon: "error",
+          confirmButtonColor: "#c49e72",
+        });
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -512,74 +648,77 @@ const FindRoom = () => {
                 <h2 className="font-Garamond text-[22px] sm:text-2xl md:text-[28px] leading-7 md:leading-8 lg:leading-9 xl:leading-10 2xl:leading-[44px] text-white font-semibold text-center">
                   GET IN TOUCH
                 </h2>
-                <form className="grid items-center grid-cols-1 gap-2 mt-8">
+                <form className="grid items-center grid-cols-1 gap-2 mt-8" onSubmit={handleSubmit}>
                   <input
                     type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
                     className="w-full h-12 md:h-13 lg:h-[59px] px-4 border border-gray dark:border-lightGray  outline-none  bg-transparent mt-4 focus:ring-0 placeholder:text-gray focus:outline-none focus:border-lightGray text-lightGray"
                     placeholder="Your Name"
                     required
                   />
                   <input
                     type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
                     className="w-full h-12 md:h-13 lg:h-[59px] px-4 border  border-gray dark:border-lightGray  outline-none  bg-transparent mt-4 focus:ring-0 placeholder:text-gray focus:outline-none focus:border-lightGray text-lightGray"
                     placeholder="Enter E-mail"
                     required
                   />
                   <select
-                    className="w-full h-12 md:h-13 lg:h-[59px] px-4 border border-gray dark:border-lightGray  outline-none  bg-transparent mt-4 focus:ring-0 focus:outline-none focus:border-lightGray  text-lightGray"
-                    onFocus={(e) => {
-                      e.target.size = 6;
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleInputChange}
+                    className="w-full h-12 md:h-13 lg:h-[59px] px-4 border border-gray dark:border-lightGray text-white dark:text-lightGray outline-none bg-lightBlack mt-4 focus:ring-0 focus:border-khaki dark:focus:border-khaki focus:outline-none appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23c49e72' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.5em 1.5em',
                     }}
-                    onBlur={(e) => {
-                      e.target.size = 0;
-                    }}
-                    onChange={(e) => {
-                      e.target.size = 1;
-                      e.target.blur();
-                    }}
+                    required
                   >
-                    <option
-                      className="bg-khaki text-white px-3 py-3"
-                      value=""
-                      disabled
-                    >
+                    <option value="" disabled>
                       Select Subject
                     </option>
-                    <option
-                      className="bg-whiteSmoke dark:bg-normalBlack text-lightBlack dark:text-white px-3 py-3"
-                      value="option1"
-                    >
-                      Subject One
+                    <option value="Adventure">
+                      Adventure
                     </option>
-                    <option
-                      className="bg-whiteSmoke dark:bg-normalBlack text-lightBlack dark:text-white px-3 py-3"
-                      value="option2"
-                    >
-                      Subject Two
+                    <option value="Honeymoon">
+                      Honeymoon
                     </option>
-                    <option
-                      className="bg-whiteSmoke dark:bg-normalBlack text-lightBlack dark:text-white px-3 py-3"
-                      value="option3"
-                    >
-                      Select Three
+                    <option value="Family Trip">
+                      Family Trip
                     </option>
-                    <option
-                      className="bg-whiteSmoke dark:bg-normalBlack text-lightBlack dark:text-white px-3 py-3"
-                      value="option4"
-                    >
-                      Select Four
+                    <option value="General Inquiry">
+                      General Inquiry
+                    </option>
+                    <option value="Booking Inquiry">
+                      Booking Inquiry
                     </option>
                   </select>
                   <textarea
-                    name=""
-                    id=""
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
                     cols="30"
                     rows="10"
-                    className="w-full h-[121px] px-4 border border-gray dark:border-lightGray  outline-none  bg-transparent mt-4 focus:ring-0 placeholder:text-gray focus:outline-none focus:border-lightGray  text-lightGray resize-none"
+                    className="w-full h-[121px] px-4 py-3 border border-gray dark:border-lightGray text-white dark:text-lightGray outline-none bg-transparent mt-4 focus:ring-0 placeholder:text-gray resize-none focus:border-khaki dark:focus:border-khaki focus:outline-none"
                     placeholder="Write Message:"
+                    required
                   ></textarea>
-                  <button className="w-full bg-khaki text-white text-center h-10 2xl:h-[55px] mt-5 hover-animBg after:bg-normalBlack dark:after:bg-lightBlack after:rounded-none">
-                    SEND MESSAGE
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={`w-full bg-khaki text-white text-center h-10 2xl:h-[55px] mt-5 font-Garamond font-semibold transition-all duration-300 ${
+                      isSubmitting
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:bg-opacity-90'
+                    }`}
+                  >
+                    {isSubmitting ? 'SENDING...' : 'SEND MESSAGE'}
                   </button>
                 </form>
               </div>
