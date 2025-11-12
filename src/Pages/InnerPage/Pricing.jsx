@@ -4,7 +4,7 @@ import { GoDotFill } from "react-icons/go";
 import AnimatedAccordionPage from "./Accordion/AnimatedAccordionPage";
 import { getActivePricingPlans } from "../../services/pricingService";
 import { getActiveRatePlans } from "../../services/ratePlansService";
-import { useBookingModal } from "../../context/BookingModalContext";
+import { useBookingModal } from "../../Context/BookingModalContext";
 
 const Pricing = () => {
   const [pricingPlans, setPricingPlans] = useState([]);
@@ -43,7 +43,7 @@ const Pricing = () => {
   return (
     <div>
       <BreadCrumb title="Pricing" />
-      {/* Pricing  */}
+      { /* Pricing  */}
       <div className="dark:bg-normalBlack py-20 2xl:py-[120px]">
         <div className="Container">
           <div

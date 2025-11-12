@@ -6,7 +6,7 @@ import "keen-slider/keen-slider.min.css";
 
 import { BsChevronLeft, BsChevronRight } from "react-icons/bs";
 import { getActiveSpecialOffers } from "../../services/specialOffersService";
-import { useBookingModal } from "../../context/BookingModalContext";
+import { useBookingModal } from "../../Context/BookingModalContext";
 
 const Offers = () => {
   const [offers, setOffers] = useState([]);

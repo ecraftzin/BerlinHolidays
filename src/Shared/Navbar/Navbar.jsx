@@ -5,7 +5,7 @@ import { IoMdClose } from "react-icons/io";
 import { BiChevronDown, BiSun } from "react-icons/bi";
 import { IoMoonSharp } from "react-icons/io5";
 import { useEffect, useState } from "react";
-import { useBookingModal } from "../../context/BookingModalContext";
+import { useBookingModal } from "../../Context/BookingModalContext";
 
 const Navbar = () => {
   // modal openar

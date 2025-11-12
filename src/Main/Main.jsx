@@ -7,9 +7,9 @@ import { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import HelmetChanger from "../Shared/Helmet/Helmet";
-import { BookingModalProvider } from "../context/BookingModalContext";
+import { BookingModalProvider } from "../Context/BookingModalContext";
 import BookingModal from "../Components/BookingForm/BookingModal";
-import { useBookingModal } from "../context/BookingModalContext";
+import { useBookingModal } from "../Context/BookingModalContext";
 
 const MainContent = () => {
   const { isBookingModalOpen, closeBookingModal } = useBookingModal();
