@@ -272,7 +272,7 @@ const About = () => {
               data-aos="fade-up"
               data-aos-duration="1000"
             >
-              <img src="/images/inner/member-1.jpg" className="w-full" alt="" />
+              <img src="/images/inner/member.jpg" className="w-full" alt="" />
               <div className="relative">
                 <div className="px-4  lg:px-[30px] pt-5 ">
                   <h3 className="text-xl sm:text-2xl lg:text-2xl xl:text-[28px] leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold font-Garamond text-center hover:opacity-0">
@@ -306,7 +306,7 @@ const About = () => {
               data-aos="fade-down"
               data-aos-duration="1000"
             >
-              <img src="/images/inner/member-2.jpg" className="w-full" alt="" />
+              <img src="/images/inner/member.jpg" className="w-full" alt="" />
               <div className="relative">
                 <div className="px-4  lg:px-[30px] pt-5 ">
                   <h3 className="text-xl sm:text-2xl lg:text-2xl xl:text-[28px] leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold font-Garamond text-center hover:opacity-0">
@@ -333,7 +333,7 @@ const About = () => {
               data-aos="fade-up"
               data-aos-duration="1000"
             >
-              <img src="/images/inner/member-3.jpg" className="w-full" alt="" />
+              <img src="/images/inner/member.jpg" className="w-full" alt="" />
               <div className="relative">
                 <div className="px-4  lg:px-[30px] pt-5 ">
                   <h3 className="text-xl sm:text-2xl lg:text-2xl xl:text-[28px] leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold font-Garamond text-center hover:opacity-0">
@@ -358,7 +358,7 @@ const About = () => {
               data-aos="fade-up"
               data-aos-duration="1000"
             >
-              <img src="/images/inner/member.png" className="w-full" alt="" />
+              <img src="/images/inner/member.jpg" className="w-full" alt="" />
               <div className="relative">
                 <div className="px-4  lg:px-[30px] pt-5 ">
                   <h3 className="text-xl sm:text-2xl lg:text-2xl xl:text-[28px] leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold font-Garamond text-center hover:opacity-0">
