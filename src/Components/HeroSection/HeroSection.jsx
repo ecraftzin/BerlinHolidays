@@ -37,16 +37,17 @@ const HeroSection = () => {
             />
             {/* Overlay Text */}
             <div className="absolute inset-0 flex justify-center items-center text-center">
-              <h1
-    className="text-white font-extrabold text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
-   style={{
+             <h1
+  className="text-white font-extrabold text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
+  style={{
     fontFamily: "'Cormorant Garamond', serif",
     textShadow: "0 4px 8px rgba(0, 0, 0, 0.6)",
     animation: "fadeIn 3s ease-out, slideIn 2s ease-out",
-   }}
-> 
-   BERLIN HOLIDAYS
-  </h1>
+  }}
+>
+  BERLIN HOLIDAYS
+</h1>
+
             </div>
           </div>
         </SwiperSlide>
