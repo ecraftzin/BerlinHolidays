@@ -1,13 +1,18 @@
 import { BiChevronDown } from "react-icons/bi";
 import BreadCrumb from "../../BreadCrumb/BreadCrumb";
-import { useState } from "react";
-import { FaStar } from "react-icons/fa6";
+import { useState, useEffect } from "react";
+import { FaStar, FaRegStar } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 import { BsArrowRight } from "react-icons/bs";
 import { MdEmail, MdOutlineShareLocation } from "react-icons/md";
 import { IoIosCall } from "react-icons/io";
 import Swal from "sweetalert2";
 import emailjs from "@emailjs/browser";
+import { getActiveRoomTypes } from "../../services/roomService";
+import "react-datepicker/dist/react-datepicker.css";
+import DatePicker from "react-datepicker";
+
+
 
 const FindRoom = () => {
   //  room info
@@ -27,6 +32,37 @@ const FindRoom = () => {
     message: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Room types from database
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [loadingRooms, setLoadingRooms] = useState(true);
+
+  // Fetch room types from database
+  useEffect(() => {
+    const fetchRoomTypes = async () => {
+      setLoadingRooms(true);
+      const result = await getActiveRoomTypes();
+      if (!result.error && result.data) {
+        setRoomTypes(result.data);
+      }
+      setLoadingRooms(false);
+    };
+    fetchRoomTypes();
+  }, []);
+
+  // Helper function to render star rating
+  const renderStars = (rating) => {
+    const stars = [];
+    const starCount = rating || 5;
+    for (let i = 0; i < 5; i++) {
+      if (i < starCount) {
+        stars.push(<FaStar key={i} />);
+      } else {
+        stars.push(<FaRegStar key={i} />);
+      }
+    }
+    return stars;
+  };
 
   const handleCheckInDate = (e) => {
     let newDate = e.target.value;
@@ -180,386 +216,232 @@ const FindRoom = () => {
         <h1 className="text-[22px] sm:text-2xl md:text-3xl 2xl:text-[34px] leading-7 sm:leading-8 md:leading-9 lg:leading-10 2xl:leading-[44px] text-lightBlack dark:text-white  mb-5  md:mb-8 lg:mb-10 font-Garamond font-semibold uppercase text-center">
           CHECK Availability
         </h1>
-        {/* Date and rome info */}
+        {/* Date and room info - Responsive Form */}
         <div
-          className="Container bg-white dark:bg-lightBlack  grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-5 items-center justify-center font-Lora py-3 lg:py-4 xl:py-5 2xl:py-6 border-t-[3px] border-t-khaki  px-5 md:px-7 2xl:px-10"
+          className="Container bg-white dark:bg-lightBlack grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 items-center justify-center font-Lora py-4 lg:py-5 xl:py-6 border-t-[3px] border-t-khaki px-4 sm:px-5 md:px-7 2xl:px-10 gap-2 sm:gap-3"
           data-aos="zoom-in-up"
           data-aos-duration="1000"
         >
-          <div className="p-3">
-            <p className="text-sm text-gray dark:text-lightGray">Check In</p>
-            <div className="flex items-center pt-[6px] ">
+          {/* Check In Date */}
+          <div className="p-2 sm:p-3 w-full">
+            <p className="text-xs sm:text-sm text-gray dark:text-lightGray mb-1">Check In</p>
+            <div className="relative">
               <input
                 type="date"
                 required
-                className="border-none pl-0 bg-transparent focus:outline-transparent focus:border-transparent text-lightBlack dark:text-white focus:border-none outline-0  text-sm lg:text-base focus:ring-transparent"
+                min={new Date().toISOString().split('T')[0]}
+                className="w-full h-10 sm:h-11 px-3 border border-gray/30 dark:border-gray/50 rounded-md bg-transparent focus:outline-none focus:border-khaki text-lightBlack dark:text-white text-sm sm:text-base cursor-pointer appearance-none"
                 value={selectedInDate}
                 onChange={handleCheckInDate}
+                style={{
+                  colorScheme: 'light dark'
+                }}
               />
             </div>
           </div>
-          <div className="p-3">
-            <p className="text-sm text-gray dark:text-lightGray">Check Out</p>
-            <div className="flex items-center pt-[6px] ">
+
+          {/* Check Out Date */}
+          <div className="p-2 sm:p-3 w-full">
+            <p className="text-xs sm:text-sm text-gray dark:text-lightGray mb-1">Check Out</p>
+            <div className="relative">
               <input
                 type="date"
                 required
-                className="border-none pl-0 bg-transparent focus:outline-transparent focus:border-transparent text-lightBlack dark:text-white focus:border-none outline-0  text-sm lg:text-base focus:ring-transparent"
+                min={selectedInDate || new Date().toISOString().split('T')[0]}
+                className="w-full h-10 sm:h-11 px-3 border border-gray/30 dark:border-gray/50 rounded-md bg-transparent focus:outline-none focus:border-khaki text-lightBlack dark:text-white text-sm sm:text-base cursor-pointer appearance-none"
                 value={selectedOutDate}
                 onChange={handleCheckOutDate}
+                style={{
+                  colorScheme: 'light dark'
+                }}
               />
             </div>
           </div>
-          <div className="p-3">
-            <div
-              className={` px-3 py-2 w-full block transition-all duration-300 group relative `}
-              to="#"
-            >
-              <span
-                className="flex items-center justify-between text-sm text-gray dark:text-lightGray cursor-pointer"
+
+          {/* Rooms Selector */}
+          <div className="p-2 sm:p-3 w-full">
+            <div className="relative">
+              <p className="text-xs sm:text-sm text-gray dark:text-lightGray mb-1">Rooms</p>
+              <div
+                className="h-10 sm:h-11 px-3 border border-gray/30 dark:border-gray/50 rounded-md flex items-center justify-between cursor-pointer hover:border-khaki transition-colors"
                 onClick={() => setOpen(!open)}
-                title="click hear to open and close rooms extender"
+                title="Click to select rooms"
               >
-                Rooms
-                <BiChevronDown className="" />
-              </span>
-              <div className="text-sm pt-[6px] lightBlack dark:text-white">
-                {room} Room
+                <span className="text-sm sm:text-base text-lightBlack dark:text-white">
+                  {room} Room{room > 1 ? 's' : ''}
+                </span>
+                <BiChevronDown className={`text-gray transition-transform ${open ? 'rotate-180' : ''}`} />
               </div>
-              <div className="absolute pt-5  z-20">
-                <div
-                  className={`shadow-2xl ${
-                    open ? "" : "hidden"
-                  } rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 `}
-                >
-                  <div className="py-2 px-5 group cursor-pointer">
-                    <li className="flex items-center justify-between">
-                      <div className="text-lightBlack dark:text-white">
-                        {room} Room
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setRoom(room + 1)}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setRoom(room - 1)}
-                          disabled={room <= 1}
-                        >
-                          -
-                        </button>
-                      </div>
-                    </li>
+              {open && (
+                <div className="absolute top-full left-0 right-0 mt-2 z-20 shadow-2xl rounded-md bg-white dark:bg-normalBlack border border-gray/20 py-3 px-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-lightBlack dark:text-white">{room} Room{room > 1 ? 's' : ''}</span>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setRoom(room + 1); }}
+                      >
+                        +
+                      </button>
+                      <button
+                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors disabled:opacity-50"
+                        onClick={(e) => { e.stopPropagation(); setRoom(room - 1); }}
+                        disabled={room <= 1}
+                      >
+                        -
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
-          <div className="p-3">
-            <div
-              className={`text-lightBlack lg:text-white dark:text-white  lg:border-b-0 px-3 py-2 w-full block transition-all duration-300 group relative `}
-              to="#"
-            >
-              <span
-                className="flex items-center justify-between text-sm text-gray dark:text-lightGray cursor-pointer"
+          {/* Guests Selector */}
+          <div className="p-2 sm:p-3 w-full">
+            <div className="relative">
+              <p className="text-xs sm:text-sm text-gray dark:text-lightGray mb-1">Guests</p>
+              <div
+                className="h-10 sm:h-11 px-3 border border-gray/30 dark:border-gray/50 rounded-md flex items-center justify-between cursor-pointer hover:border-khaki transition-colors"
                 onClick={() => setGuestOpen(!guestOpen)}
-                title="click hear to open and close Adult And Children extender"
+                title="Click to select guests"
               >
-                Guests
-                <BiChevronDown className="" />
-              </span>
-              <div className="pt-[6px] text-sm  text-lightBlack dark:text-white">
-                {adult} Adult, {children} Child
+                <span className="text-sm sm:text-base text-lightBlack dark:text-white">
+                  {adult} Adult{adult > 1 ? 's' : ''}, {children} Child{children !== 1 ? 'ren' : ''}
+                </span>
+                <BiChevronDown className={`text-gray transition-transform ${guestOpen ? 'rotate-180' : ''}`} />
               </div>
-              <div className="absolute pt-5  z-20 right-0 md:left-5">
-                <div
-                  className={`shadow-2xl ${
-                    guestOpen ? "" : "hidden"
-                  } rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 `}
-                >
-                  <div className="py-2 px-5 group cursor-pointer">
-                    <li className="flex items-center justify-between">
-                      <div className="">{adult} Adult</div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setAdult(adult + 1)}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setAdult(adult - 1)}
-                          disabled={adult <= 1}
-                        >
-                          -
-                        </button>
-                      </div>
-                    </li>
-                    <li className="flex items-center justify-between mt-1">
-                      <div className="">{children} Child</div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setChildren(children + 1)}
-                        >
-                          +
-                        </button>
-                        <button
-                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setChildren(children - 1)}
-                          disabled={children < 1}
-                        >
-                          -
-                        </button>
-                      </div>
-                    </li>
+              {guestOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 z-20 shadow-2xl rounded-md bg-white dark:bg-normalBlack border border-gray/20 py-3 px-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-lightBlack dark:text-white">{adult} Adult{adult > 1 ? 's' : ''}</span>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setAdult(adult + 1); }}
+                      >
+                        +
+                      </button>
+                      <button
+                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors disabled:opacity-50"
+                        onClick={(e) => { e.stopPropagation(); setAdult(adult - 1); }}
+                        disabled={adult <= 1}
+                      >
+                        -
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <Link to="/room_details" state={bookingInfo ? bookingInfo : ""}>
-            <button className="w-[142px] h-[50px] text-[15px] bg-khaki font-Garamond text-white">
-              Checkout Now
-            </button>
-          </Link>
-        </div>
-        {/* Room Details */}
-        <div className="mt-14 2xl:mt-[60px] grid items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 xl:gap-[30px] Container">
-          {/* Room - 1 */}
-          <div data-aos="zoom-in-up" data-aos-duration="1000">
-            <div className="overflow-x-hidden 3xl:w-[410px] group relative">
-              <div className="relative">
-                <div className="overflow-hidden">
-                  <img
-                    src="/images/inner/room-2.jpg "
-                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
-                    alt=""
-                  />
-                </div>
-                <Link to={"/room_details"}>
-                  <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white  group-hover:left-0 transition-all duration-300 hover:bg-khaki">
-                    View Details{" "}
-                    <BsArrowRight className="w-4 h-4 ml-2  text-white" />{" "}
-                  </button>
-                </Link>
-              </div>
-              <div className="font-Garamond">
-                <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm  items-center justify-center text-white  absolute top-[10px] right-[10px] font-Lora font-normal leading-[26px]">
-                  <span className="">$560</span>
-                  <span className="mx-2">|</span>
-                  <span>Night</span>
-                </div>
-
-                <div className=" border-[1px] border-[#e8e8e8] dark:border-[#424242] border-t-0">
-                  <div className="py-6 px-[30px]">
-                    <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
-                      Luxury Room
-                    </h4>
-                    <Link to="/room_details">
-                      <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
-                        Double Suite Rooms
-                      </h2>
-                    </Link>
-                    <p className="text-sm font-normal text-gray  dark:text-lightGray font-Lora">
-                      1500 SQ.FT/Rooms
-                    </p>
-                  </div>
-                  <div className="  border-t-[1px] border-[#e8e8e8] dark:border-[#424242] py-5">
-                    <div className="px-[30px] flex items-center justify-between">
-                      <div className="">
-                        <span className="font-Lora text-base flex items-center ">
-                          <img
-                            src="/images/home-1/room-bottom-icon.png"
-                            alt=""
-                          />
-                          <span className="ml-[10px] text-gray dark:text-lightGray">
-                            2 King Bed
-                          </span>
-                        </span>
-                      </div>
-                      <span className="w-[1px] h-[25px] bg-[#ddd] dark:bg-gray"></span>
-                      <ul className="flex items-center text-khaki space-x-[5px]">
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                      </ul>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-lightBlack dark:text-white">{children} Child{children !== 1 ? 'ren' : ''}</span>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors"
+                        onClick={(e) => { e.stopPropagation(); setChildren(children + 1); }}
+                      >
+                        +
+                      </button>
+                      <button
+                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors disabled:opacity-50"
+                        onClick={(e) => { e.stopPropagation(); setChildren(children - 1); }}
+                        disabled={children < 1}
+                      >
+                        -
+                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
-          <div data-aos="zoom-in-up" data-aos-duration="1000">
-            {/* Room - 2 */}
-            <div className="overflow-x-hidden 3xl:w-[410px] group relative">
-              <div className="relative">
-                <div className="overflow-hidden">
-                  <img
-                    src="/images/inner/roms-1.jpg"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
-                    alt=""
-                  />
-                </div>
-                <Link to={"/room_details"}>
-                  <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white  group-hover:left-0 transition-all duration-300 hover:bg-khaki">
-                    View Details{" "}
-                    <BsArrowRight className="w-4 h-4 ml-2  text-white" />{" "}
-                  </button>
-                </Link>
-              </div>
-              <div className="font-Garamond">
-                <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm  items-center justify-center font-Lora font-normal leading-[26px] text-white  absolute top-[10px] right-[10px] ">
-                  <span className="">$560</span>
-                  <span className="mx-2">|</span>
-                  <span>Night</span>
-                </div>
 
-                <div className=" border-[1px] border-[#e8e8e8] dark:border-[#424242] border-t-0">
-                  <div className="py-6 px-[30px]">
-                    <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
-                      Luxury Room
-                    </h4>
-                    <Link to="/room_details">
-                      <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
-                        Delux Family Rooms
-                      </h2>
-                    </Link>
-                    <p className="text-sm font-normal text-gray  dark:text-lightGray font-Lora">
-                      1500 SQ.FT/Rooms
-                    </p>
-                  </div>
-                  <div className="  border-t-[1px] border-[#e8e8e8] dark:border-[#424242] py-5">
-                    <div className="px-[30px] flex items-center justify-between">
-                      <div className="">
-                        <span className="font-Lora text-base flex items-center ">
-                          <img
-                            src="/images/home-1/room-bottom-icon.png"
-                            alt=""
-                          />
-                          <span className="ml-[10px] text-gray dark:text-lightGray">
-                            2 King Bed
-                          </span>
-                        </span>
-                      </div>
-                      <span className="w-[1px] h-[25px] bg-[#ddd] dark:bg-gray"></span>
-                      <ul className="flex items-center text-khaki space-x-[5px]">
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div data-aos="zoom-in-up" data-aos-duration="1000">
-            {/* Room - 3 */}
-            <div className="overflow-x-hidden 3xl:w-[410px] group relative">
-              <div className="relative">
-                <div className="overflow-hidden">
-                  <img
-                    src="/images/inner/room-3.jpg"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-all duration-300"
-                    alt=""
-                  />
-                </div>
-                <Link to={"/room_details"}>
-                  <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white  group-hover:left-0 transition-all duration-300 hover:bg-khaki">
-                    View Details{" "}
-                    <BsArrowRight className="w-4 h-4 ml-2  text-white" />{" "}
-                  </button>
-                </Link>
-              </div>
-              <div className="font-Garamond">
-                <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm  items-center justify-center font-Lora font-normal leading-[26px] text-white  absolute top-[10px] right-[10px] ">
-                  <span className="">$560</span>
-                  <span className="mx-2">|</span>
-                  <span>Night</span>
-                </div>
-
-                <div className=" border-[1px] border-[#e8e8e8] dark:border-[#424242] border-t-0">
-                  <div className="py-6 px-[30px]">
-                    <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
-                      Luxury Room
-                    </h4>
-                    <Link to="/room_details">
-                      <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
-                        Suprior Bed Rooms
-                      </h2>
-                    </Link>
-                    <p className="text-sm font-normal text-gray  dark:text-lightGray font-Lora">
-                      1500 SQ.FT/Rooms
-                    </p>
-                  </div>
-                  <div className="  border-t-[1px] border-[#e8e8e8] dark:border-[#424242] py-5">
-                    <div className="px-[30px] flex items-center justify-between">
-                      <div className="">
-                        <span className="font-Lora text-base flex items-center ">
-                          <img
-                            src="/images/home-1/room-bottom-icon.png"
-                            alt=""
-                          />
-                          <span className="ml-[10px] text-gray dark:text-lightGray">
-                            2 King Bed
-                          </span>
-                        </span>
-                      </div>
-                      <span className="w-[1px] h-[25px] bg-[#ddd] dark:bg-gray"></span>
-                      <ul className="flex items-center text-khaki space-x-[5px]">
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                        <li>
-                          <FaStar />
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Search Button */}
+          <div className="p-2 sm:p-3 w-full sm:col-span-2 lg:col-span-1">
+            <Link to="/room" state={bookingInfo ? bookingInfo : ""} className="block">
+              <button className="w-full h-10 sm:h-11 text-sm sm:text-[15px] bg-khaki font-Garamond text-white rounded-md hover:bg-opacity-90 transition-colors">
+                Search Rooms
+              </button>
+            </Link>
           </div>
         </div>
+        {/* Room Details - Dynamic from Database */}
+        {loadingRooms ? (
+          <div className="mt-14 2xl:mt-[60px] text-center Container">
+            <p className="text-gray dark:text-lightGray font-Lora">Loading rooms...</p>
+          </div>
+        ) : roomTypes.length === 0 ? (
+          <div className="mt-14 2xl:mt-[60px] text-center Container">
+            <p className="text-gray dark:text-lightGray font-Lora">No rooms available at the moment.</p>
+          </div>
+        ) : (
+          <div className="mt-14 2xl:mt-[60px] grid items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 xl:gap-[30px] Container">
+            {roomTypes.map((roomType) => (
+              <div key={roomType.id} data-aos="zoom-in-up" data-aos-duration="1000">
+                <div className="overflow-x-hidden 3xl:w-[410px] group relative">
+                  <div className="relative">
+                    <div className="overflow-hidden">
+                      <img
+                        src={roomType.images && roomType.images.length > 0 ? roomType.images[0] : "/images/inner/room-2.jpg"}
+                        className="w-full h-[250px] object-cover group-hover:scale-110 transition-all duration-300"
+                        alt={roomType.name}
+                        onError={(e) => {
+                          e.target.src = "/images/inner/room-2.jpg";
+                        }}
+                      />
+                    </div>
+                    <Link to={`/room/${roomType.slug}`} state={{ roomData: roomType }}>
+                      <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white group-hover:left-0 transition-all duration-300 hover:bg-khaki">
+                        View Details{" "}
+                        <BsArrowRight className="w-4 h-4 ml-2 text-white" />
+                      </button>
+                    </Link>
+                  </div>
+                  <div className="font-Garamond">
+                    <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm items-center justify-center text-white absolute top-[10px] right-[10px] font-Lora font-normal leading-[26px]">
+                      <span>₹{roomType.base_price}</span>
+                      <span className="mx-2">|</span>
+                      <span>Night</span>
+                    </div>
+
+                    <div className="border-[1px] border-[#e8e8e8] dark:border-[#424242] border-t-0">
+                      <div className="py-6 px-[30px]">
+                        <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
+                          {roomType.category_label || "Premium Room"}
+                        </h4>
+                        <Link to={`/room/${roomType.slug}`} state={{ roomData: roomType }}>
+                          <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
+                            {roomType.name}
+                          </h2>
+                        </Link>
+                        <p className="text-sm font-normal text-gray dark:text-lightGray font-Lora">
+                          {roomType.size || `${roomType.capacity} Guests`}
+                        </p>
+                      </div>
+                      <div className="border-t-[1px] border-[#e8e8e8] dark:border-[#424242] py-5">
+                        <div className="px-[30px] flex items-center justify-between">
+                          <div>
+                            <span className="font-Lora text-base flex items-center">
+                              <img
+                                src="/images/home-1/room-bottom-icon.png"
+                                alt=""
+                              />
+                              <span className="ml-[10px] text-gray dark:text-lightGray">
+                                {roomType.bed_type || "Comfortable Bed"}
+                              </span>
+                            </span>
+                          </div>
+                          <span className="w-[1px] h-[25px] bg-[#ddd] dark:bg-gray"></span>
+                          <ul className="flex items-center text-khaki space-x-[5px]">
+                            {renderStars(roomType.star_rating)}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
       {/* Contact form */}
       <div className="py-20 2xl:py-[120px] dark:bg-lightBlack">
