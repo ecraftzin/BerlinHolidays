@@ -6,6 +6,8 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getRoomTypeBySlug } from "../../services/roomService";
 import { createBooking } from "../../services/bookingService";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const RoomDetails = () => {
   const [imageIndex, setImageIndex] = useState(0);
@@ -20,10 +22,10 @@ const RoomDetails = () => {
   // Booking form state - interactive fields
   const [bookingFormData, setBookingFormData] = useState({
     checkInDate: bookingsData?.selectedInDate || new Date().toISOString().split('T')[0],
-    checkOutDate: bookingsData?.selectedOutDate || new Date(new Date().setDate(new Date().getDate() + 3)).toISOString().split('T')[0],
+    checkOutDate: bookingsData?.selectedOutDate || "",
     adults: bookingsData?.adult || 2,
     children: bookingsData?.children || 1,
-    rooms: bookingsData?.room || 1,
+    rooms: bookingsData?.room ?? 1,
   });
 
   // Fetch room data by slug
@@ -78,39 +80,120 @@ const RoomDetails = () => {
   // booking alert message - now saves to database
   const setAlert = async () => {
     // First, collect contact information
-    const { value: formValues } = await Swal.fire({
-      title: 'Enter Your Contact Details',
-      html:
-        '<input id="swal-name" class="swal2-input" placeholder="Full Name" required>' +
-        '<input id="swal-email" type="email" class="swal2-input" placeholder="Email Address" required>' +
-        '<input id="swal-phone" class="swal2-input" placeholder="Phone Number (optional)">'+
-        '<textarea id="swal-requests" class="swal2-textarea" placeholder="Special Requests (optional)"></textarea>',
-      focusConfirm: false,
-      showCancelButton: true,
-      confirmButtonColor: "#006938",
-      cancelButtonColor: "#c49e72",
-      confirmButtonText: 'Continue to Booking',
-      preConfirm: () => {
-        const name = document.getElementById('swal-name').value;
-        const email = document.getElementById('swal-email').value;
-        const phone = document.getElementById('swal-phone').value;
-        const requests = document.getElementById('swal-requests').value;
+     const { value: formValues } = await Swal.fire({
+    title: "Your Contact Details",
+    html: `
+      <div class="space-y-4 text-left font-Lora text-sm">
+        <!-- Name -->
+        <div>
+          <label class="block mb-1 text-xs font-semibold text-gray-500">
+            Full Name <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="swal-name"
+            type="text"
+            placeholder="Enter your full name"
+            class="w-full px-4 py-3 border-2 border-[#e8e8e8] rounded-lg
+                   bg-[#f7f5f2] text-[13px] text-[#1f2933]
+                   focus:outline-none focus:border-[#c49e72]
+                   focus:ring-1 focus:ring-[#c49e72]/50"
+          />
+        </div>
 
-        if (!name || !email) {
-          Swal.showValidationMessage('Please enter your name and email');
-          return false;
-        }
+        <!-- Email -->
+        <div>
+          <label class="block mb-1 text-xs font-semibold text-gray-500">
+            Email Address <span class="text-red-500">*</span>
+          </label>
+          <input
+            id="swal-email"
+            type="email"
+            placeholder="you@example.com"
+            class="w-full px-4 py-3 border-2 border-[#e8e8e8] rounded-lg
+                   bg-[#f7f5f2] text-[13px] text-[#1f2933]
+                   focus:outline-none focus:border-[#c49e72]
+                   focus:ring-1 focus:ring-[#c49e72]/50"
+          />
+        </div>
 
-        // Email validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-          Swal.showValidationMessage('Please enter a valid email address');
-          return false;
-        }
+        <!-- Phone -->
+        <div>
+          <label class="block mb-1 text-xs font-semibold text-gray-500">
+            Phone Number <span class="text-red-400 text-[11px]">*</span>
+          </label>
+          <input
+            id="swal-phone"
+            type="tel"
+            placeholder="Enter your phone number"
+            class="w-full px-4 py-3 border-2 border-[#e8e8e8] rounded-lg
+                   bg-[#f7f5f2] text-[13px] text-[#1f2933]
+                   focus:outline-none focus:border-[#c49e72]
+                   focus:ring-1 focus:ring-[#c49e72]/50"
+          />
+        </div>
 
-        return { name, email, phone, requests };
+        <!-- Special Requests -->
+        <div>
+          <label class="block mb-1 text-xs font-semibold text-gray-500">
+            Special Requests <span class="text-gray-400 text-[11px]">(optional)</span>
+          </label>
+          <textarea
+            id="swal-requests"
+            rows="3"
+            placeholder="Any special requests or requirements?"
+            class="w-full px-4 py-3 border-2 border-[#e8e8e8] rounded-lg
+                   bg-[#f7f5f2] text-[13px] text-[#1f2933]
+                   focus:outline-none focus:border-[#c49e72]
+                   focus:ring-1 focus:ring-[#c49e72]/50 resize-none"
+          ></textarea>
+        </div>
+      </div>
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: "Continue to Booking",
+    cancelButtonText: "Cancel",
+    background: "#f7f5f2",
+    color: "#1f2933",
+    confirmButtonColor: "#006938", // still needed for accessibility
+    cancelButtonColor: "#c49e72",
+    buttonsStyling: false, // use our own Tailwind classes
+    customClass: {
+      popup:
+        "rounded-2xl shadow-2xl border border-[#e8e2d8] max-w-lg w-full",
+      title:
+        "font-Garamond text-2xl text-[#1f2933] mb-2 uppercase tracking-[0.08em]",
+      confirmButton:
+        "px-6 py-2.5 bg-[#006938] hover:bg-[#004d27] text-white text-sm " +
+        "font-Garamond font-semibold rounded-full shadow-md " +
+        "transition-all duration-200 ml-2",
+      cancelButton:
+        "px-6 py-2.5 bg-white hover:bg-[#f3ede4] text-[#4b5563] text-sm " +
+        "font-Garamond font-semibold rounded-full border border-[#d1c3ad] " +
+        "transition-all duration-200",
+    },
+    preConfirm: () => {
+      const name = document.getElementById("swal-name").value.trim();
+      const email = document.getElementById("swal-email").value.trim();
+      const phone = document.getElementById("swal-phone").value.trim();
+      const requests = document.getElementById("swal-requests").value.trim();
+
+      if (!name || !email) {
+        Swal.showValidationMessage("Please enter your name and email");
+        return false;
       }
-    });
+
+      const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+      if (!emailRegex.test(email)) {
+        Swal.showValidationMessage("Please enter a valid email address");
+        return false;
+      }
+
+      return { name, email, phone, requests };
+    },
+  });
+
+  if (!formValues) return; // user cancelled
 
     if (!formValues) return; // User cancelled
 
@@ -419,38 +502,69 @@ const RoomDetails = () => {
                   data-aos="zoom-in-up"
                   data-aos-duration="1000"
                 >
-                  {/* Check-in Date Picker */}
-                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
-                    <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
-                      Check In
-                    </label>
-                    <input
-                      type="date"
-                      name="checkInDate"
-                      value={bookingFormData.checkInDate}
-                      onChange={handleBookingInputChange}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-khaki bg-transparent border-none outline-none cursor-pointer"
-                    />
-                  </div>
+            {/* Check-in Date Picker */}
+             <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3  border border-[#006938] rounded-md">
+            <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
+              Check In
+                </label>
+              <DatePicker
+                selected={
+               bookingFormData.checkInDate
+            ? new Date(bookingFormData.checkInDate)
+             : null
+             }
+           onChange={(date) =>
+           setBookingFormData((prev) => ({
+           ...prev,
+           checkInDate: date.toISOString().split("T")[0],
+         // optional: if checkout is before new check-in, reset it
+          checkOutDate:
+          prev.checkOutDate &&
+          new Date(prev.checkOutDate) <= date
+            ? ""
+            : prev.checkOutDate,
+      }))
+       }
+     minDate={new Date()}
+     dateFormat="dd-MM-yyyy"
+     placeholderText="Select check-in date"
+     className="w-full text-sm md:text-[15px] leading-[26px] font-Lora font-medium
+               text-khaki bg-transparent border-none outline-none cursor-pointer"
+      wrapperClassName="w-full"/>
+      </div>
 
-                  {/* Check-out Date Picker */}
-                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
-                    <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
-                      Check Out
-                    </label>
-                    <input
-                      type="date"
-                      name="checkOutDate"
-                      value={bookingFormData.checkOutDate}
-                      onChange={handleBookingInputChange}
-                      min={bookingFormData.checkInDate}
-                      className="w-full text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-khaki bg-transparent border-none outline-none cursor-pointer"
-                    />
-                  </div>
+{/* Check-out Date Picker */}
+        <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3  border border-[#006938] rounded-md">
+         <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
+        Check Out
+         </label>
+     <DatePicker
+       selected={
+      bookingFormData.checkOutDate
+        ? new Date(bookingFormData.checkOutDate)
+        : null
+    }
+    onChange={(date) =>
+      setBookingFormData((prev) => ({
+        ...prev,
+        checkOutDate: date.toISOString().split("T")[0],
+      }))
+    }
+    minDate={
+      bookingFormData.checkInDate
+        ? new Date(bookingFormData.checkInDate)
+        : new Date()
+    }
+    dateFormat="dd-MM-yyyy"
+    placeholderText="Select check-out date"
+    className="w-full text-sm md:text-[15px] leading-[26px] font-Lora font-medium
+               text-khaki bg-transparent border-none outline-none cursor-pointer"
+    wrapperClassName="w-full"/>
+        </div>
+
 
                   {/* Adults Selector */}
-                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
+                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3  border border-[#006938] rounded-md">
                     <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
                       Adults
                     </label>
@@ -482,7 +596,7 @@ const RoomDetails = () => {
                   </div>
 
                   {/* Children Selector */}
-                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
+                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3  border border-[#006938] rounded-md">
                     <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
                       Children
                     </label>
@@ -514,7 +628,7 @@ const RoomDetails = () => {
                   </div>
 
                   {/* Rooms Selector */}
-                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
+                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3  border border-[#006938] rounded-md">
                     <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
                       Rooms
                     </label>
@@ -559,7 +673,7 @@ const RoomDetails = () => {
 
             {/* Price Display */}
             <div
-              className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 bg-whiteSmoke dark:bg-normalBlack px-7 py-8"
+              className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 bg-whiteSmoke dark:bg-normalBlack px-7 py-8  border border-[#006938] rounded-md"
               data-aos="zoom-in-up"
               data-aos-duration="1000"
             >
@@ -568,10 +682,9 @@ const RoomDetails = () => {
               </h4>
               <div className="flex items-center justify-between">
                 <span className="text-sm lg:text-base text-gray dark:text-lightGray font-Lora">Per Night</span>
-                <span className="text-2xl font-Garamond text-khaki font-semibold">₹{roomData.base_price}</span>
+                <span className="text-2xl font-Garamond text-[#006938] font-semibold">₹{roomData.base_price}</span>
               </div>
             </div>
-
             {/* Amenities */}
             <div
               className="mt-3 sm:mt-4 md:mt-5 lg:mt-6"

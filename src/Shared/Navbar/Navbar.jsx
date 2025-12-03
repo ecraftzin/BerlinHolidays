@@ -58,50 +58,66 @@ const Navbar = () => {
             </Link>
           </div>
           {/* small screen size */}
-          <div className="px-3 w-full lg:hidden flex justify-between text-lightBlack lg:text-white dark:text-white bg-khaki h-[70px]  items-center  p-3">
-            <div className=" w-28  ">
-              <Link to="/">
-                <img
-                  src="/images/home-3/berlinlogo01.png"
-                  className="block lg:hidden "
-                  alt="Berlin_website_logo"
-                />
-              </Link>
-            </div>
+         {/* small screen size */}
+<div className="px-3 w-full lg:hidden flex justify-between items-center bg-khaki h-[70px] text-white p-3">
+  {/* Logo */}
+  <div className="w-28">
+    <Link to="/">
+      <img
+        src="/images/home-3/berlinlogo01.png"
+        className="block lg:hidden"
+        alt="Berlin_website_logo"
+      />
+    </Link>
+  </div>
 
-            {/* toggle bar and dark and light mode. */}
-            <div className="flex items-center ">
-              <span onClick={handleClick} className="mr-3 cursor-pointer">
-                {isDarkMode ? (
-                  <BiSun
-                    className="text-white"
-                    title="Apply Light Mode"
-                    size={20}
-                  />
-                ) : (
-                  <IoMoonSharp
-                    size={20}
-                    className="text-white"
-                    title="Apply Dark Mode"
-                  />
-                )}
-              </span>
-              <Link to="/login" className="mr-3 cursor-pointer" title="Login">
-                <FaUserCircle className="text-white" size={20} />
-              </Link>
-              <button
-                className="lg:hidden block focus:outline-none "
-                onClick={toggleNavbar}
-              >
-                {/* modal open and close */}
-                {isOpen ? (
-                  <IoMdClose className="w-6 h-6 text-white" />
-                ) : (
-                  <FaBars className="w-5 h-5 text-white" />
-                )}
-              </button>
-            </div>
-          </div>
+  {/* Booking + icons */}
+  <div className="flex items-center gap-2">
+    {/* Booking Online FIRST */}
+    <button
+      onClick={() => {
+        openBookingModal();
+        setIsOpen(false); // close mobile menu if open
+      }}
+      className="text-[10px] xs:text-xs px-3 py-1 border border-white rounded-sm uppercase tracking-[0.08em] font-Garamond"
+    >
+      Booking Online
+    </button>
+
+    {/* Dark / Light */}
+    <span onClick={handleClick} className="cursor-pointer">
+      {isDarkMode ? (
+        <BiSun
+          className="text-white"
+          title="Apply Light Mode"
+          size={20}
+        />
+      ) : (
+        <IoMoonSharp
+          size={20}
+          className="text-white"
+          title="Apply Dark Mode"
+        />
+      )}
+    </span>
+
+    {/* Login */}
+    <Link to="/login" className="cursor-pointer" title="Login">
+      <FaUserCircle className="text-white" size={20} />
+    </Link>
+
+    {/* Menu (hamburger) */}
+    <button
+      className="lg:hidden block focus:outline-none"
+      onClick={toggleNavbar}>
+       {isOpen ? (
+        <IoMdClose className="w-6 h-6 text-white" />
+       ) : (
+         <FaBars className="w-5 h-5 text-white" />
+         )}
+         </button>
+         </div>
+         </div>
           {/* All navLink are hear with active */}
           <ul
             className={`${

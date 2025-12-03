@@ -5,14 +5,17 @@ import { BiChevronDown } from "react-icons/bi";
 import Swal from "sweetalert2";
 import { createBooking } from "../../services/bookingService";
 import { getActiveRoomTypes } from "../../services/roomService";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 const BookingModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     checkInDate: "",
     checkOutDate: "",
     roomType: "",
-    rooms: 1,
-    adults: 1,
+    rooms: 0,
+    adults: 0,
     children: 0,
   });
 
@@ -263,38 +266,56 @@ const BookingModal = ({ isOpen, onClose }) => {
         <form onSubmit={handleSubmit} className="p-6 lg:p-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
             {/* Check-in Date */}
-            <div className="relative">
-              <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2 uppercase">
-                <FaCalendarAlt className="inline mr-2 text-[#006938]" />
-                Check-In
-              </label>
-              <input
-                type="date"
-                name="checkInDate"
-                value={formData.checkInDate}
-                onChange={handleInputChange}
-                min={today}
-                className="w-full h-12 px-4 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300 focus:ring-2 focus:ring-[#c49e72]/20"
-                required
-              />
-            </div>
+           <div className="relative">
+  <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2 uppercase">
+    <FaCalendarAlt className="inline mr-2 text-[#006938]" />
+    Check-In
+  </label>
+
+  <DatePicker
+    selected={formData.checkInDate ? new Date(formData.checkInDate) : null}
+    onChange={(date) =>
+      setFormData((prev) => ({
+        ...prev,
+        checkInDate: date.toISOString().split("T")[0],
+        checkOutDate: prev.checkOutDate && new Date(prev.checkOutDate) <= date
+          ? "" // reset checkout if it's before check-in
+          : prev.checkOutDate,
+      }))
+    }
+    minDate={new Date()}
+    dateFormat="dd-MM-yyyy"
+    placeholderText="Select check-in date"
+    className="
+      w-full h-12 px-4 border-2 border-[#e8e8e8]
+      dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72]
+      text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800
+      outline-none rounded-lg font-Lora transition-all duration-300"/>
+           </div>
 
             {/* Check-out Date */}
             <div className="relative">
-              <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2 uppercase">
-                <FaCalendarAlt className="inline mr-2 text-[#006938]" />
-                Check-Out
-              </label>
-              <input
-                type="date"
-                name="checkOutDate"
-                value={formData.checkOutDate}
-                onChange={handleInputChange}
-                min={formData.checkInDate || today}
-                className="w-full h-12 px-4 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300 focus:ring-2 focus:ring-[#c49e72]/20"
-                required
-              />
-            </div>
+           <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2 uppercase">
+          <FaCalendarAlt className="inline mr-2 text-[#006938]" />
+           Check-Out
+          </label>
+
+          <DatePicker
+          selected={formData.checkOutDate ? new Date(formData.checkOutDate) : null}
+        onChange={(date) =>
+         setFormData((prev) => ({
+          ...prev,
+          checkOutDate: date.toISOString().split("T")[0],
+         }))
+         }
+          minDate={formData.checkInDate ? new Date(formData.checkInDate) : new Date()}
+          dateFormat="dd-MM-yyyy"
+           placeholderText="Select check-out date"
+           className="
+          w-full h-12 px-4 border-2 border-[#e8e8e8]
+          dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72]
+         text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800
+            outline-none rounded-lg font-Lora transition-all duration-300"/></div>
 
             {/* Room Type */}
             <div className="relative">
@@ -368,7 +389,7 @@ const BookingModal = ({ isOpen, onClose }) => {
 
                 {/* Dropdown */}
                 {showGuestDropdown && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 border-2 border-[#c49e72] rounded-lg shadow-2xl z-50 p-4">
+                  <div className="absolute top-full left-0 right--15 mt-2 bg-white dark:bg-gray-800 border-2 border-[#c49e72] rounded-lg shadow-2xl z-50 p-4">
                     {/* Adults */}
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
                       <div className="flex items-center">
@@ -453,6 +474,81 @@ const BookingModal = ({ isOpen, onClose }) => {
               </div>
             </div>
           </div>
+          {/* Guest / Contact Details */}
+         <div
+        className="bg-[#f7f5f2] dark:bg-gray-800 rounded-xl p-6 mb-8 border-l-4 border-[#c49e72]">
+        <h3 className="text-lg font-bold font-Garamond text-lightBlack dark:text-white mb-4">
+        Guest Details
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-Lora text-sm">
+    {/* Full Name */}
+        <div>
+        <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+        <FaUser className="inline mr-2 text-[#006938]" />
+        Full Name <span className="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        name="name"
+        value={contactData.name}
+        onChange={handleContactInputChange}
+        className="w-full px-4 py-3 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300"
+        placeholder="Enter your full name"
+        required
+      />
+    </div>
+
+    {/* Mobile Number */}
+    <div>
+      <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+        <FaPhone className="inline mr-2 text-[#006938]" />
+        Mobile Number <span className="text-red-500">*</span>
+      </label>
+      <input
+        type="tel"
+        name="phone"
+        value={contactData.phone}
+        onChange={handleContactInputChange}
+        className="w-full px-4 py-3 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300"
+        placeholder="Enter your mobile number"
+        required
+      />
+    </div>
+
+    {/* Email Address */}
+    <div>
+      <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+        <FaEnvelope className="inline mr-2 text-[#006938]" />
+        Email Address <span className="text-red-500">*</span>
+      </label>
+      <input
+        type="email"
+        name="email"
+        value={contactData.email}
+        onChange={handleContactInputChange}
+        className="w-full px-4 py-3 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300"
+        placeholder="Enter your email address"
+        required
+      />
+    </div>
+
+    {/* Special Requests */}
+    <div className="md:col-span-2">
+      <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+        Special Requests
+      </label>
+      <textarea
+        name="specialRequests"
+        value={contactData.specialRequests}
+        onChange={handleContactInputChange}
+        rows="3"
+        className="w-full px-4 py-3 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300"
+        placeholder="Any special requests or requirements?"
+      ></textarea>
+    </div>
+  </div>
+</div>
+
 
           {/* Booking Summary */}
           <div className="bg-[#f7f5f2] dark:bg-gray-800 rounded-xl p-4 lg:p-6 mb-6 border-l-4 border-[#006938]">
