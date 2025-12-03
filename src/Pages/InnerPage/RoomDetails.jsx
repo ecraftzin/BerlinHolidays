@@ -23,8 +23,8 @@ const RoomDetails = () => {
   const [bookingFormData, setBookingFormData] = useState({
     checkInDate: bookingsData?.selectedInDate || new Date().toISOString().split('T')[0],
     checkOutDate: bookingsData?.selectedOutDate || "",
-    adults: bookingsData?.adult || 2,
-    children: bookingsData?.children || 1,
+    adults: bookingsData?.adult || 1,
+    children: bookingsData?.children || 0,
     rooms: bookingsData?.room ?? 1,
   });
 
