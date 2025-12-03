@@ -1,5 +1,5 @@
 // src/Pages/AdminDashboard/DashboardOverview.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaBed,
@@ -14,81 +14,114 @@ import {
   FaArrowDown,
 } from "react-icons/fa";
 import { useDarkMode } from "../../Context/DarkModeContext";
+import { getAllBookings, getBookingStats } from "../../services/bookingService";
+import { getAllRoomTypes } from "../../services/roomService";
 
 const DashboardOverview = () => {
   const { isDarkMode } = useDarkMode();
   const navigate = useNavigate();
+  const [bookings, setBookings] = useState([]);
+  const [bookingStats, setBookingStats] = useState(null);
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      // Fetch bookings
+      const bookingsResult = await getAllBookings();
+      if (bookingsResult.data) {
+        setBookings(bookingsResult.data);
+      }
+
+      // Fetch booking stats
+      const statsResult = await getBookingStats();
+      if (statsResult.data) {
+        setBookingStats(statsResult.data);
+      }
+
+      // Fetch room types
+      const roomsResult = await getAllRoomTypes();
+      if (roomsResult.data) {
+        setRoomTypes(roomsResult.data);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get reserved room names (rooms with pending or confirmed bookings)
+  const getReservedRooms = () => {
+    const today = new Date().toISOString().split('T')[0];
+    return bookings
+      .filter(booking =>
+        (booking.status === 'pending' || booking.status === 'confirmed') &&
+        booking.check_in_date >= today
+      )
+      .map(booking => booking.room_name);
+  };
+
+  const reservedRoomNames = getReservedRooms();
+
   const stats = [
     {
       title: "Total Rooms",
-      value: "24",
-      change: "+2",
-      trend: "up",
+      value: roomTypes.reduce((sum, room) => sum + (room.total_rooms || 0), 0).toString(),
+      change: `${roomTypes.length} types`,
+      trend: "neutral",
       icon: FaBed,
       color: "#c49e72",
       bgColor: "#c49e72",
     },
     {
       title: "Active Bookings",
-      value: "18",
-      change: "+5",
+      value: bookingStats?.confirmed || "0",
+      change: `${bookingStats?.pending || 0} pending`,
       trend: "up",
       icon: FaCalendarCheck,
       color: "#006938",
       bgColor: "#006938",
     },
     {
-      title: "Blog Posts",
-      value: "42",
-      change: "+3",
+      title: "Total Bookings",
+      value: bookingStats?.total || "0",
+      change: `${bookingStats?.completed || 0} completed`,
       trend: "up",
       icon: FaBlog,
       color: "#c49e72",
       bgColor: "#c49e72",
     },
     {
-      title: "Revenue (Month)",
-      value: "₹2.4L",
-      change: "+12%",
-      trend: "up",
+      title: "Cancelled",
+      value: bookingStats?.cancelled || "0",
+      change: "This month",
+      trend: "neutral",
       icon: FaDollarSign,
       color: "#006938",
       bgColor: "#006938",
     },
-    {
-      title: "Special Offers",
-      value: "8",
-      change: "0",
-      trend: "neutral",
-      icon: FaGift,
-      color: "#c49e72",
-      bgColor: "#c49e72",
-    },
-    {
-      title: "Menu Items",
-      value: "56",
-      change: "+4",
-      trend: "up",
-      icon: FaUtensils,
-      color: "#006938",
-      bgColor: "#006938",
-    },
   ];
 
-  const recentActivities = [
-    { action: "New booking for Deluxe Room", time: "2 hours ago", type: "booking" },
-    { action: "Blog post 'Wayanad Adventures' published", time: "5 hours ago", type: "blog" },
-    { action: "Special offer 'Summer Sale' activated", time: "1 day ago", type: "offer" },
-    { action: "Menu item 'Kerala Breakfast' added", time: "2 days ago", type: "menu" },
-    { action: "Room rates updated for December", time: "3 days ago", type: "rate" },
-  ];
+  const recentActivities = bookings.slice(0, 5).map(booking => ({
+    action: `New booking for ${booking.room_name} by ${booking.customer_name}`,
+    time: new Date(booking.created_at).toLocaleDateString(),
+    type: "booking"
+  }));
 
-  const upcomingBookings = [
-    { guest: "Rajesh Kumar", room: "Deluxe Suite", checkIn: "Dec 15, 2024", status: "Confirmed" },
-    { guest: "Priya Sharma", room: "Standard Room", checkIn: "Dec 16, 2024", status: "Pending" },
-    { guest: "Amit Patel", room: "Family Room", checkIn: "Dec 18, 2024", status: "Confirmed" },
-    { guest: "Sarah Johnson", room: "Premium Suite", checkIn: "Dec 20, 2024", status: "Confirmed" },
-  ];
+  const upcomingBookings = bookings
+    .filter(b => b.status === 'confirmed' || b.status === 'pending')
+    .slice(0, 4)
+    .map(booking => ({
+      guest: booking.customer_name,
+      room: booking.room_name,
+      checkIn: new Date(booking.check_in_date).toLocaleDateString(),
+      status: booking.status.charAt(0).toUpperCase() + booking.status.slice(1)
+    }));
 
   return (
     <div className="space-y-6">
@@ -267,6 +300,98 @@ const DashboardOverview = () => {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Room Status Overview */}
+      <div className={`rounded-xl shadow-md p-6 border ${
+        isDarkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
+      }`}>
+        <div className="flex items-center justify-between mb-4">
+          <h2
+            className={`text-xl font-bold font-Garamond ${
+              isDarkMode ? "text-white" : ""
+            }`}
+            style={!isDarkMode ? { color: "#1e1e1e" } : {}}
+          >
+            Room Status Overview
+          </h2>
+          <div className="flex items-center gap-4 text-xs font-Lora">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: "#ff8c00" }}></div>
+              <span className={isDarkMode ? "text-gray-300" : "text-gray-600"}>Reserved</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className={isDarkMode ? "text-gray-300" : "text-gray-600"}>Available</span>
+            </div>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4" style={{ borderColor: "#c49e72" }}></div>
+          </div>
+        ) : roomTypes.length === 0 ? (
+          <p className={`text-center py-8 font-Lora ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+            No rooms available
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {roomTypes.map((room) => {
+              const isReserved = reservedRoomNames.includes(room.name);
+              return (
+                <div
+                  key={room.id}
+                  className={`p-4 rounded-lg border-2 transition-all ${
+                    isDarkMode ? "border-gray-600" : "border-gray-200"
+                  }`}
+                  style={{
+                    borderColor: isReserved ? "#ff8c00" : isDarkMode ? "#4b5563" : "#e5e7eb",
+                    backgroundColor: isReserved ? "#ff8c0010" : "transparent"
+                  }}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3
+                        className={`font-bold font-Garamond text-lg mb-1 ${
+                          isDarkMode ? "text-white" : ""
+                        }`}
+                        style={{
+                          color: isReserved ? "#ff8c00" : !isDarkMode ? "#1e1e1e" : undefined
+                        }}
+                      >
+                        {room.name}
+                      </h3>
+                      <p className={`text-sm font-Lora ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                        {room.category_label || "Standard Room"}
+                      </p>
+                      <p className={`text-sm font-Lora font-semibold mt-1`} style={{ color: "#006938" }}>
+                        ₹{room.base_price ? parseFloat(room.base_price).toLocaleString('en-IN') : '0'} / night
+                      </p>
+                    </div>
+                    <div
+                      className="w-3 h-3 rounded-full mt-1"
+                      style={{ backgroundColor: isReserved ? "#ff8c00" : "#10b981" }}
+                    ></div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between text-sm font-Lora">
+                    <span className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
+                      Total: {room.total_rooms || 0}
+                    </span>
+                    <span className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
+                      Available: {room.available_rooms || 0}
+                    </span>
+                  </div>
+                  {isReserved && (
+                    <div className="mt-2 text-xs font-Lora font-semibold" style={{ color: "#ff8c00" }}>
+                      ⚠ Currently Reserved
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Quick Actions */}

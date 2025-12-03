@@ -174,6 +174,7 @@ CREATE TABLE IF NOT EXISTS room_availability (
   available_rooms INTEGER NOT NULL,
   booked_rooms INTEGER DEFAULT 0,
   blocked_rooms INTEGER DEFAULT 0,
+  minimum_stay INTEGER DEFAULT 1,
   status TEXT DEFAULT 'available', -- 'available', 'limited', 'sold_out', 'blocked'
   notes TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

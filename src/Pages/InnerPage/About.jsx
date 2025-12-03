@@ -265,36 +265,29 @@ const About = () => {
           </div>
 
           {/* Section Content */}
-          <div className="mt-[60px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[30px] ">
+          <div className="mt-[60px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-[30px] ">
             {/* Member one */}
             <div
               className="member group"
-              data-aos="fade-up"
+              data-aos="fade-down"
               data-aos-duration="1000"
             >
-              <img src="/images/inner/member-1.jpg" className="w-full" alt="" />
+              <img src="/images/inner/member.png" className="w-full" alt="" />
               <div className="relative">
                 <div className="px-4  lg:px-[30px] pt-5 ">
                   <h3 className="text-xl sm:text-2xl lg:text-2xl xl:text-[28px] leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold font-Garamond text-center hover:opacity-0">
-                    Anoop Krishnan
+                     SHARATH
                   </h3>
                   <p className="text-sm md:text-base leading-[26px] text-Gray dark:text-lightGray font-normal font-Lora text-center group-hover:text-white dark:hover:text-white hover:opacity-0">
-                    Resort Manager
+                    Front office
                   </p>
                 </div>
                 <div
                   className="p-[30px] bg-khaki grid items-center justify-center absolute bottom-[-150px] sm:bottom-[-170px] md:bottom-[-150px] group-hover:bottom-[-38px] lg:group-hover:bottom-[-30px] transition-all
                  duration-500 left-0 right-0"
                 >
-                  {/* Socials (optional)
-                  <div className="flex items-center justify-center space-x-4 text-white">
-                    <FaFacebookF />
-                    <BsTwitter />
-                    <FaLinkedinIn />
-                    <FaPinterestP />
-                  </div> */}
                   <p className="text-white font-medium leading-10 text-xl lg:text-[22px] font-Garamond">
-                    anoopberlin@gmail.com
+                    Front office
                   </p>
                 </div>
               </div>
@@ -306,14 +299,14 @@ const About = () => {
               data-aos="fade-down"
               data-aos-duration="1000"
             >
-              <img src="/images/inner/member-2.jpg" className="w-full" alt="" />
+              <img src="/images/inner/member.png" className="w-full" alt="" />
               <div className="relative">
                 <div className="px-4  lg:px-[30px] pt-5 ">
                   <h3 className="text-xl sm:text-2xl lg:text-2xl xl:text-[28px] leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold font-Garamond text-center hover:opacity-0">
-                    Neha Suresh
+                    RAUF
                   </h3>
                   <p className="text-sm md:text-base leading-[26px] text-Gray dark:text-lightGray font-normal font-Lora text-center group-hover:text-white dark:hover:text-white hover:opacity-0">
-                    Executive Chef
+                    Operation wing
                   </p>
                 </div>
                 <div
@@ -321,7 +314,7 @@ const About = () => {
                  duration-500 left-0 right-0"
                 >
                   <p className="text-white font-medium leading-10 text-xl lg:text-[22px] font-Garamond">
-                    nexaberlin@gmail.com
+                    Operation wing
                   </p>
                 </div>
               </div>
@@ -330,17 +323,17 @@ const About = () => {
             {/* Member three */}
             <div
               className="member group"
-              data-aos="fade-up"
+              data-aos="fade-down"
               data-aos-duration="1000"
             >
-              <img src="/images/inner/member-3.jpg" className="w-full" alt="" />
+              <img src="/images/inner/member.png" className="w-full" alt="" />
               <div className="relative">
                 <div className="px-4  lg:px-[30px] pt-5 ">
                   <h3 className="text-xl sm:text-2xl lg:text-2xl xl:text-[28px] leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold font-Garamond text-center hover:opacity-0">
-                    Rajeev Menon
+                     SAROJ
                   </h3>
                   <p className="text-sm md:text-base leading-[26px] text-Gray dark:text-lightGray font-normal font-Lora text-center group-hover:text-white dark:hover:text-white hover:opacity-0">
-                    Wellness & Spa Director
+                    House keeping
                   </p>
                 </div>
                 <div
@@ -348,7 +341,33 @@ const About = () => {
                  duration-500 left-0 right-0"
                 >
                   <p className="text-white font-medium leading-10 text-xl lg:text-[22px] font-Garamond">
-                    rajeevberlin@gmail.com
+                    House keeping
+                  </p>
+                </div>
+              </div>
+            </div>
+            {/* Member four */}
+            <div
+              className="member group"
+              data-aos="fade-down"
+              data-aos-duration="1000"
+            >
+              <img src="/images/inner/member.png" className="w-full" alt="" />
+              <div className="relative">
+                <div className="px-4  lg:px-[30px] pt-5 ">
+                  <h3 className="text-xl sm:text-2xl lg:text-2xl xl:text-[28px] leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold font-Garamond text-center hover:opacity-0">
+                    ABILASH
+                  </h3>
+                  <p className="text-sm md:text-base leading-[26px] text-Gray dark:text-lightGray font-normal font-Lora text-center group-hover:text-white dark:hover:text-white hover:opacity-0">
+                    ORestaurant
+                  </p>
+                </div>
+                <div
+                  className="p-[30px] bg-khaki grid items-center justify-center absolute bottom-[-150px] sm:bottom-[-170px] md:bottom-[-150px] group-hover:bottom-[-38px] lg:group-hover:bottom-[-30px] transition-all
+                 duration-500 left-0 right-0"
+                >
+                  <p className="text-white font-medium leading-10 text-xl lg:text-[22px] font-Garamond">
+                    Restaurant
                   </p>
                 </div>
               </div>

@@ -15,9 +15,8 @@ import {
   FaTimes,
   FaSignOutAlt,
   FaHotel,
-  FaCalendarAlt,
-  FaDollarSign,
   FaListAlt,
+  FaClipboardList,
   FaQuestionCircle,
   FaCog,
 } from "react-icons/fa";
@@ -48,6 +47,11 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
       path: "/admin/dashboard",
     },
     {
+      name: "Bookings",
+      icon: FaClipboardList,
+      path: "/admin/bookings",
+    },
+    {
       name: "Blog Posts",
       icon: FaBlog,
       path: "/admin/blog",
@@ -64,12 +68,11 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
       key: "rooms",
       submenu: [
         { name: "Room Types", icon: FaHotel, path: "/admin/rooms/types" },
-        { name: "Rate Plans", icon: FaDollarSign, path: "/admin/rooms/rate-plans" },
         { name: "Availability", icon: FaListAlt, path: "/admin/rooms/availability" },
       ],
     },
     {
-      name: "Pricing Plans",
+      name: "Packages",
       icon: FaTags,
       path: "/admin/pricing-plans",
     },
@@ -125,9 +128,15 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
         <div className={`p-6 border-b ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#c49e72" }}>
-                <FaHotel className="text-white text-xl" />
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center"
+              style={{ backgroundColor: "#c49e72" }}>
+              <img 
+               src="/public/fav-icon/BERL logo .png" 
+              alt="Berlin Holidays Logo" 
+               className="w-full h-full object-contain"
+                 />
               </div>
+
               <div>
                 <h2
                   className={`text-lg font-bold font-Garamond ${

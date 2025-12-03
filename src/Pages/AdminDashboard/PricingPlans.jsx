@@ -222,7 +222,7 @@ const PricingPlans = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold font-Garamond" style={{ color: "#1e1e1e" }}>
-            Pricing Plans
+            Packages
           </h1>
           <p className="text-gray-600 font-Lora mt-1">
             Manage holiday packages and pricing plans
@@ -240,7 +240,7 @@ const PricingPlans = () => {
           style={{ backgroundColor: "#006938" }}
         >
           <FaPlus />
-          <span>Add Pricing Plan</span>
+          <span>Add Packages</span>
         </button>
       </div>
 
@@ -253,10 +253,10 @@ const PricingPlans = () => {
         <div className="text-center py-12 bg-white rounded-xl shadow-md">
           <FaTag className="mx-auto text-6xl mb-4" style={{ color: "#c49e72" }} />
           <h3 className="text-xl font-bold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
-            No Pricing Plans Yet
+            No Packages Yet
           </h3>
           <p className="text-gray-600 font-Lora mb-4">
-            Get started by creating your first pricing plan
+            Get started by creating your first package
           </p>
           <button
             onClick={() => {
@@ -270,7 +270,7 @@ const PricingPlans = () => {
             style={{ backgroundColor: "#006938" }}
           >
             <FaPlus className="inline mr-2" />
-            Create First Plan
+            Create First Package
           </button>
         </div>
       ) : (
@@ -372,7 +372,7 @@ const PricingPlans = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
-                      Plan Name <span className="text-red-500">*</span>
+                      Package Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -433,7 +433,7 @@ const PricingPlans = () => {
                   {/* Image Upload Field */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
-                      Plan Image
+                      Package Image
                     </label>
 
                     {imagePreview ? (

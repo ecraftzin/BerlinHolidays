@@ -38,10 +38,10 @@ import SignupPage from "../Pages/SignupPage/SignupPage";
 // Admin Pages
 import AdminLayout from "../Components/Admin/AdminLayout";
 import DashboardOverview from "../Pages/AdminDashboard/DashboardOverview";
+import BookingManagement from "../Pages/AdminDashboard/BookingManagement";
 import BlogManagement from "../Pages/AdminDashboard/BlogManagement";
 import SEOManagement from "../Pages/AdminDashboard/SEOManagement";
 import RoomTypes from "../Pages/AdminDashboard/RoomTypes";
-import RatePlans from "../Pages/AdminDashboard/RatePlans";
 import RoomAvailability from "../Pages/AdminDashboard/RoomAvailability";
 import PricingPlans from "../Pages/AdminDashboard/PricingPlans";
 import SpecialOffers from "../Pages/AdminDashboard/SpecialOffers";
@@ -376,6 +376,10 @@ const router = createBrowserRouter([
         element: <DashboardOverview />,
       },
       {
+        path: "bookings",
+        element: <BookingManagement />,
+      },
+      {
         path: "blog",
         element: <BlogManagement />,
       },
@@ -386,10 +390,6 @@ const router = createBrowserRouter([
       {
         path: "rooms/types",
         element: <RoomTypes />,
-      },
-      {
-        path: "rooms/rate-plans",
-        element: <RatePlans />,
       },
       {
         path: "rooms/availability",

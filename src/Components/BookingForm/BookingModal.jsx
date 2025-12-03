@@ -1,22 +1,45 @@
 // src/Components/BookingForm/BookingModal.jsx
 import React, { useState, useEffect } from "react";
-import { FaCalendarAlt, FaBed, FaUsers, FaChild, FaUserFriends, FaTimes } from "react-icons/fa";
+import { FaCalendarAlt, FaBed, FaUsers, FaChild, FaUserFriends, FaTimes, FaUser, FaEnvelope, FaPhone } from "react-icons/fa";
 import { BiChevronDown } from "react-icons/bi";
 import Swal from "sweetalert2";
+import { createBooking } from "../../services/bookingService";
+import { getActiveRoomTypes } from "../../services/roomService";
 
 const BookingModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
     checkInDate: "",
     checkOutDate: "",
+    roomType: "",
     rooms: 1,
     adults: 1,
     children: 0,
   });
 
   const [showGuestDropdown, setShowGuestDropdown] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
+  const [contactData, setContactData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    specialRequests: "",
+  });
+  const [roomTypes, setRoomTypes] = useState([]);
 
   // Get today's date in YYYY-MM-DD format for min date
   const today = new Date().toISOString().split("T")[0];
+
+  // Fetch room types
+  useEffect(() => {
+    fetchRoomTypes();
+  }, []);
+
+  const fetchRoomTypes = async () => {
+    const result = await getActiveRoomTypes();
+    if (result.data) {
+      setRoomTypes(result.data);
+    }
+  };
 
   // Close modal on ESC key
   useEffect(() => {
@@ -57,6 +80,14 @@ const BookingModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleContactInputChange = (e) => {
+    const { name, value } = e.target;
+    setContactData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -81,6 +112,16 @@ const BookingModal = ({ isOpen, onClose }) => {
       return;
     }
 
+    if (!formData.roomType) {
+      Swal.fire({
+        title: "Error",
+        text: "Please select a room type",
+        icon: "error",
+        confirmButtonColor: "#006938",
+      });
+      return;
+    }
+
     // Check if check-out is after check-in
     if (new Date(formData.checkOutDate) <= new Date(formData.checkInDate)) {
       Swal.fire({
@@ -92,56 +133,91 @@ const BookingModal = ({ isOpen, onClose }) => {
       return;
     }
 
-    // Success - Show booking details
-    const totalGuests = formData.adults + formData.children;
-    const nights = Math.ceil(
-      (new Date(formData.checkOutDate) - new Date(formData.checkInDate)) /
-        (1000 * 60 * 60 * 24)
-    );
+    // Show contact form
+    setShowContactForm(true);
+  };
 
-    Swal.fire({
-      title: "Booking Details",
-      html: `
-        <div style="text-align: left; font-family: Lora, serif;">
-          <p style="margin: 10px 0;"><strong>Check-in:</strong> ${new Date(
-            formData.checkInDate
-          ).toLocaleDateString()}</p>
-          <p style="margin: 10px 0;"><strong>Check-out:</strong> ${new Date(
-            formData.checkOutDate
-          ).toLocaleDateString()}</p>
-          <p style="margin: 10px 0;"><strong>Nights:</strong> ${nights}</p>
-          <p style="margin: 10px 0;"><strong>Rooms:</strong> ${formData.rooms}</p>
-          <p style="margin: 10px 0;"><strong>Adults:</strong> ${formData.adults}</p>
-          <p style="margin: 10px 0;"><strong>Children:</strong> ${formData.children}</p>
-          <p style="margin: 10px 0;"><strong>Total Guests:</strong> ${totalGuests}</p>
-        </div>
-      `,
-      icon: "success",
-      confirmButtonText: "Proceed to Booking",
-      confirmButtonColor: "#006938",
-      showCancelButton: true,
-      cancelButtonText: "Modify",
-      cancelButtonColor: "#c49e72",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        console.log("Booking Data:", formData);
-        Swal.fire({
-          title: "Success!",
-          text: "Your booking request has been submitted. We'll contact you shortly!",
-          icon: "success",
-          confirmButtonColor: "#006938",
-        });
-        onClose();
-        // Reset form
-        setFormData({
-          checkInDate: "",
-          checkOutDate: "",
-          rooms: 1,
-          adults: 1,
-          children: 0,
-        });
-      }
-    });
+  const handleFinalSubmit = async () => {
+    // Validate contact information
+    if (!contactData.name || !contactData.email) {
+      Swal.fire({
+        title: "Error",
+        text: "Please provide your name and email",
+        icon: "error",
+        confirmButtonColor: "#006938",
+      });
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactData.email)) {
+      Swal.fire({
+        title: "Error",
+        text: "Please provide a valid email address",
+        icon: "error",
+        confirmButtonColor: "#006938",
+      });
+      return;
+    }
+
+    const totalGuests = formData.adults + formData.children;
+
+    // Get selected room details
+    const selectedRoom = roomTypes.find(room => room.id === formData.roomType);
+
+    // Save booking to database
+    const bookingData = {
+      customer_name: contactData.name,
+      customer_email: contactData.email,
+      customer_phone: contactData.phone || null,
+      room_id: formData.roomType,
+      room_name: selectedRoom ? selectedRoom.name : "Room",
+      check_in_date: formData.checkInDate,
+      check_out_date: formData.checkOutDate,
+      number_of_rooms: formData.rooms,
+      number_of_adults: formData.adults,
+      number_of_children: formData.children,
+      total_guests: totalGuests,
+      special_requests: contactData.specialRequests || null,
+      status: "pending",
+    };
+
+    const saveResult = await createBooking(bookingData);
+
+    if (saveResult.data) {
+      setShowContactForm(false);
+      Swal.fire({
+        title: "Success!",
+        text: "Your booking request has been submitted successfully! We'll contact you shortly to confirm your reservation.",
+        icon: "success",
+        confirmButtonColor: "#006938",
+      });
+
+      // Reset forms
+      setFormData({
+        checkInDate: "",
+        checkOutDate: "",
+        roomType: "",
+        rooms: 1,
+        adults: 1,
+        children: 0,
+      });
+      setContactData({
+        name: "",
+        email: "",
+        phone: "",
+        specialRequests: "",
+      });
+      onClose();
+    } else {
+      Swal.fire({
+        title: "Error",
+        text: "Failed to submit booking. Please try again or contact us directly.",
+        icon: "error",
+        confirmButtonColor: "#006938",
+      });
+    }
   };
 
   const totalGuests = formData.adults + formData.children;
@@ -218,6 +294,28 @@ const BookingModal = ({ isOpen, onClose }) => {
                 className="w-full h-12 px-4 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300 focus:ring-2 focus:ring-[#c49e72]/20"
                 required
               />
+            </div>
+
+            {/* Room Type */}
+            <div className="relative">
+              <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2 uppercase">
+                <FaBed className="inline mr-2 text-[#006938]" />
+                Room Type
+              </label>
+              <select
+                name="roomType"
+                value={formData.roomType}
+                onChange={handleInputChange}
+                className="w-full h-12 px-4 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300 focus:ring-2 focus:ring-[#c49e72]/20"
+                required
+              >
+                <option value="">Select Room Type</option>
+                {roomTypes.map((room) => (
+                  <option key={room.id} value={room.id}>
+                    {room.name} - ₹{room.base_price}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Rooms */}
@@ -409,6 +507,106 @@ const BookingModal = ({ isOpen, onClose }) => {
           </div>
         </form>
       </div>
+
+      {/* Contact Information Modal */}
+      {showContactForm && (
+        <div className="fixed inset-0 bg-black/70 z-[10000] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-normalBlack rounded-xl shadow-2xl max-w-md w-full">
+            <div className="h-3 bg-gradient-to-r from-[#c49e72] via-[#006938] to-[#c49e72]"></div>
+
+            <div className="p-6">
+              <h2 className="text-2xl font-bold font-Garamond text-lightBlack dark:text-white mb-4">
+                Your Contact Information
+              </h2>
+              <p className="text-sm text-gray dark:text-lightGray font-Lora mb-6">
+                Please provide your details to complete the booking
+              </p>
+
+              <div className="space-y-4">
+                {/* Name */}
+                <div>
+                  <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+                    <FaUser className="inline mr-2 text-[#006938]" />
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={contactData.name}
+                    onChange={handleContactInputChange}
+                    className="w-full px-4 py-3 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300"
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+                    <FaEnvelope className="inline mr-2 text-[#006938]" />
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={contactData.email}
+                    onChange={handleContactInputChange}
+                    className="w-full px-4 py-3 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+                    <FaPhone className="inline mr-2 text-[#006938]" />
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={contactData.phone}
+                    onChange={handleContactInputChange}
+                    className="w-full px-4 py-3 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+
+                {/* Special Requests */}
+                <div>
+                  <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+                    Special Requests
+                  </label>
+                  <textarea
+                    name="specialRequests"
+                    value={contactData.specialRequests}
+                    onChange={handleContactInputChange}
+                    rows="3"
+                    className="w-full px-4 py-3 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300"
+                    placeholder="Any special requests or requirements?"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowContactForm(false)}
+                  className="flex-1 px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold font-Garamond rounded-lg transition-all duration-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleFinalSubmit}
+                  className="flex-1 px-6 py-3 bg-[#006938] hover:bg-[#004d27] text-white font-bold font-Garamond rounded-lg transition-all duration-300"
+                >
+                  Submit Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

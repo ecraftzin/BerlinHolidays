@@ -199,7 +199,7 @@ const Navbar = () => {
                   <div className=" px-5 group hover:bg-khaki hover:text-white">
                     <li className="hover:ml-3 duration-300  ">
                       <NavLink to="/pricing" className="py-2 block">
-                        PRICING
+                        PACKAGES
                       </NavLink>
                     </li>
                   </div>

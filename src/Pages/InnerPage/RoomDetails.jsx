@@ -5,6 +5,7 @@ import { FiLogOut } from "react-icons/fi";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getRoomTypeBySlug } from "../../services/roomService";
+import { createBooking } from "../../services/bookingService";
 
 const RoomDetails = () => {
   const [imageIndex, setImageIndex] = useState(0);
@@ -15,6 +16,15 @@ const RoomDetails = () => {
   const bookingsData = location.state && location.state;
 
   const navigate = useNavigate();
+
+  // Booking form state - interactive fields
+  const [bookingFormData, setBookingFormData] = useState({
+    checkInDate: bookingsData?.selectedInDate || new Date().toISOString().split('T')[0],
+    checkOutDate: bookingsData?.selectedOutDate || new Date(new Date().setDate(new Date().getDate() + 3)).toISOString().split('T')[0],
+    adults: bookingsData?.adult || 2,
+    children: bookingsData?.children || 1,
+    rooms: bookingsData?.room || 1,
+  });
 
   // Fetch room data by slug
   useEffect(() => {
@@ -54,31 +64,139 @@ const RoomDetails = () => {
     setImageIndex((prevIndex) => (prevIndex + 1) % images.length);
   };
 
-  // booking alert message
-  const setAlert = () => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You booking this rooms?",
-      icon: "warning",
+  // Handle booking form input changes
+  const handleBookingInputChange = (e) => {
+    const { name, value } = e.target;
+    setBookingFormData(prev => ({
+      ...prev,
+      [name]: name === 'adults' || name === 'children' || name === 'rooms'
+        ? parseInt(value) || 0
+        : value
+    }));
+  };
+
+  // booking alert message - now saves to database
+  const setAlert = async () => {
+    // First, collect contact information
+    const { value: formValues } = await Swal.fire({
+      title: 'Enter Your Contact Details',
+      html:
+        '<input id="swal-name" class="swal2-input" placeholder="Full Name" required>' +
+        '<input id="swal-email" type="email" class="swal2-input" placeholder="Email Address" required>' +
+        '<input id="swal-phone" class="swal2-input" placeholder="Phone Number (optional)">'+
+        '<textarea id="swal-requests" class="swal2-textarea" placeholder="Special Requests (optional)"></textarea>',
+      focusConfirm: false,
       showCancelButton: true,
-      confirmButtonColor: "#008000",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, i want!",
-      color: "#fff",
-      background: "#c19d68",
-    }).then((result) => {
-      if (result.isConfirmed) {
+      confirmButtonColor: "#006938",
+      cancelButtonColor: "#c49e72",
+      confirmButtonText: 'Continue to Booking',
+      preConfirm: () => {
+        const name = document.getElementById('swal-name').value;
+        const email = document.getElementById('swal-email').value;
+        const phone = document.getElementById('swal-phone').value;
+        const requests = document.getElementById('swal-requests').value;
+
+        if (!name || !email) {
+          Swal.showValidationMessage('Please enter your name and email');
+          return false;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+          Swal.showValidationMessage('Please enter a valid email address');
+          return false;
+        }
+
+        return { name, email, phone, requests };
+      }
+    });
+
+    if (!formValues) return; // User cancelled
+
+    // Validate dates
+    if (new Date(bookingFormData.checkInDate) >= new Date(bookingFormData.checkOutDate)) {
+      Swal.fire({
+        title: "Invalid Dates",
+        text: "Check-out date must be after check-in date",
+        icon: "error",
+        confirmButtonColor: "#006938",
+      });
+      return;
+    }
+
+    // Use the interactive booking form data
+    const checkInDate = bookingFormData.checkInDate;
+    const checkOutDate = bookingFormData.checkOutDate;
+    const adults = bookingFormData.adults;
+    const children = bookingFormData.children;
+    const rooms = bookingFormData.rooms;
+
+    const result = await Swal.fire({
+      title: "Confirm Your Booking",
+      html: `
+        <div style="text-align: left; font-family: Lora, serif;">
+          <h3 style="color: #006938; margin-bottom: 10px;">Guest Details</h3>
+          <p style="margin: 5px 0;"><strong>Name:</strong> ${formValues.name}</p>
+          <p style="margin: 5px 0;"><strong>Email:</strong> ${formValues.email}</p>
+          ${formValues.phone ? `<p style="margin: 5px 0;"><strong>Phone:</strong> ${formValues.phone}</p>` : ''}
+
+          <h3 style="color: #006938; margin-top: 15px; margin-bottom: 10px;">Room Details</h3>
+          <p style="margin: 5px 0;"><strong>Room:</strong> ${roomData?.name || 'Room'}</p>
+          <p style="margin: 5px 0;"><strong>Check-in:</strong> ${new Date(checkInDate).toLocaleDateString()}</p>
+          <p style="margin: 5px 0;"><strong>Check-out:</strong> ${new Date(checkOutDate).toLocaleDateString()}</p>
+          <p style="margin: 5px 0;"><strong>Rooms:</strong> ${rooms}</p>
+          <p style="margin: 5px 0;"><strong>Adults:</strong> ${adults}</p>
+          <p style="margin: 5px 0;"><strong>Children:</strong> ${children}</p>
+          ${formValues.requests ? `<p style="margin: 5px 0;"><strong>Special Requests:</strong> ${formValues.requests}</p>` : ''}
+        </div>
+      `,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#006938",
+      cancelButtonColor: "#c49e72",
+      confirmButtonText: "Confirm Booking",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      // Save booking to database
+      const bookingData = {
+        customer_name: formValues.name,
+        customer_email: formValues.email,
+        customer_phone: formValues.phone || null,
+        room_id: roomData?.id || null,
+        room_name: roomData?.name || "Room",
+        check_in_date: checkInDate,
+        check_out_date: checkOutDate,
+        number_of_rooms: rooms,
+        number_of_adults: adults,
+        number_of_children: children,
+        special_requests: formValues.requests || null,
+        status: "pending",
+      };
+
+      const saveResult = await createBooking(bookingData);
+
+      if (saveResult.data) {
         Swal.fire({
           title: "Congratulation!",
-          text: "Booking Successful!",
+          text: "Your booking has been confirmed! We'll contact you shortly to finalize your reservation.",
           icon: "success",
           background: "#c19d68",
           color: "#fff",
-          confirmButtonColor: "#008000",
+          confirmButtonColor: "#006938",
         });
         navigate("/");
+      } else {
+        Swal.fire({
+          title: "Error",
+          text: "Failed to submit booking. Please try again or contact us directly.",
+          icon: "error",
+          confirmButtonColor: "#006938",
+        });
       }
-    });
+    }
   };
   if (loading) {
     return (
@@ -301,66 +419,130 @@ const RoomDetails = () => {
                   data-aos="zoom-in-up"
                   data-aos-duration="1000"
                 >
-                  <div className="bg-white dark:bg-lightBlack h-10 lg:h-[50px] 2xl:h-[56px] grid items-center justify-start px-3 sm:px-5 2xl:px-6 ">
-                    <p className="text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-lightBlack dark:text-white">
-                      Check In -{" "}
-                      <span className="text-khaki">
-                        {bookingsData && bookingsData.selectedInDate
-                          ? new Date(bookingsData.selectedInDate)
-                              .toDateString()
-                              .slice(4)
-                          : new Date().toDateString().slice(4)}
-                      </span>
-                    </p>
+                  {/* Check-in Date Picker */}
+                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
+                    <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
+                      Check In
+                    </label>
+                    <input
+                      type="date"
+                      name="checkInDate"
+                      value={bookingFormData.checkInDate}
+                      onChange={handleBookingInputChange}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-khaki bg-transparent border-none outline-none cursor-pointer"
+                    />
                   </div>
-                  <div className="bg-white dark:bg-lightBlack h-10 lg:h-[50px] 2xl:h-[56px] grid items-center justify-start px-3 sm:px-5 2xl:px-6">
-                    <p className="text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-lightBlack dark:text-white">
-                      Check Out -{" "}
-                      <span className="text-khaki">
-                        {bookingsData && bookingsData.selectedOutDate
-                          ? new Date(bookingsData.selectedOutDate)
-                              .toDateString()
-                              .slice(4)
-                          : new Date(
-                              new Date().setDate(new Date().getDate() + 3)
-                            )
-                              .toDateString()
-                              .slice(4)}
-                      </span>{" "}
-                    </p>
+
+                  {/* Check-out Date Picker */}
+                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
+                    <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
+                      Check Out
+                    </label>
+                    <input
+                      type="date"
+                      name="checkOutDate"
+                      value={bookingFormData.checkOutDate}
+                      onChange={handleBookingInputChange}
+                      min={bookingFormData.checkInDate}
+                      className="w-full text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-khaki bg-transparent border-none outline-none cursor-pointer"
+                    />
                   </div>
-                  <div className="bg-white dark:bg-lightBlack h-10 lg:h-[50px] 2xl:h-[56px] grid items-center justify-start px-3 sm:px-5 2xl:px-6">
-                    <p className="text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-lightBlack dark:text-white">
-                      Adult -{" "}
-                      <span className="text-khaki">
-                        0
-                        {bookingsData && bookingsData.adult
-                          ? bookingsData.adult
-                          : "2"}
-                      </span>{" "}
-                    </p>
+
+                  {/* Adults Selector */}
+                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
+                    <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
+                      Adults
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setBookingFormData(prev => ({ ...prev, adults: Math.max(1, prev.adults - 1) }))}
+                        className="w-8 h-8 flex items-center justify-center bg-khaki text-white rounded-full hover:bg-opacity-80 transition-all"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        name="adults"
+                        value={bookingFormData.adults}
+                        onChange={handleBookingInputChange}
+                        min="1"
+                        max="10"
+                        className="w-16 text-center text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-khaki bg-transparent border border-gray-300 dark:border-gray-600 rounded outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setBookingFormData(prev => ({ ...prev, adults: Math.min(10, prev.adults + 1) }))}
+                        className="w-8 h-8 flex items-center justify-center bg-khaki text-white rounded-full hover:bg-opacity-80 transition-all"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                  <div className="bg-white dark:bg-lightBlack h-10 lg:h-[50px] 2xl:h-[56px] grid items-center justify-start px-3 sm:px-5 2xl:px-6">
-                    <p className="text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-lightBlack dark:text-white">
-                      Children -{" "}
-                      <span className="text-khaki">
-                        0
-                        {bookingsData && bookingsData.children
-                          ? bookingsData.children
-                          : "1"}
-                      </span>{" "}
-                    </p>
+
+                  {/* Children Selector */}
+                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
+                    <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
+                      Children
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setBookingFormData(prev => ({ ...prev, children: Math.max(0, prev.children - 1) }))}
+                        className="w-8 h-8 flex items-center justify-center bg-khaki text-white rounded-full hover:bg-opacity-80 transition-all"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        name="children"
+                        value={bookingFormData.children}
+                        onChange={handleBookingInputChange}
+                        min="0"
+                        max="10"
+                        className="w-16 text-center text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-khaki bg-transparent border border-gray-300 dark:border-gray-600 rounded outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setBookingFormData(prev => ({ ...prev, children: Math.min(10, prev.children + 1) }))}
+                        className="w-8 h-8 flex items-center justify-center bg-khaki text-white rounded-full hover:bg-opacity-80 transition-all"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
-                  <div className="bg-white dark:bg-lightBlack h-10 lg:h-[50px] 2xl:h-[56px] grid items-center justify-start px-3 sm:px-5 2xl:px-6">
-                    <p className="text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-lightBlack dark:text-white">
-                      Rooms -{" "}
-                      <span className="text-khaki">
-                        0
-                        {bookingsData && bookingsData.room
-                          ? bookingsData.room
-                          : "1"}
-                      </span>{" "}
-                    </p>
+
+                  {/* Rooms Selector */}
+                  <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3">
+                    <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
+                      Rooms
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setBookingFormData(prev => ({ ...prev, rooms: Math.max(1, prev.rooms - 1) }))}
+                        className="w-8 h-8 flex items-center justify-center bg-khaki text-white rounded-full hover:bg-opacity-80 transition-all"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        name="rooms"
+                        value={bookingFormData.rooms}
+                        onChange={handleBookingInputChange}
+                        min="1"
+                        max="5"
+                        className="w-16 text-center text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-khaki bg-transparent border border-gray-300 dark:border-gray-600 rounded outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setBookingFormData(prev => ({ ...prev, rooms: Math.min(5, prev.rooms + 1) }))}
+                        className="w-8 h-8 flex items-center justify-center bg-khaki text-white rounded-full hover:bg-opacity-80 transition-all"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
