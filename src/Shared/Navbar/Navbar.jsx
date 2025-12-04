@@ -1,11 +1,14 @@
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import useScrollPosition from "./useScrollPosition";
-import { FaBars, FaUserCircle } from "react-icons/fa";
+import { FaBars } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { BiChevronDown, BiSun } from "react-icons/bi";
 import { IoMoonSharp } from "react-icons/io5";
 import { useEffect, useState } from "react";
 import { useBookingModal } from "../../Context/BookingModalContext";
+import UserProfileDropdown from "../../Components/UserProfileDropdown/UserProfileDropdown";
+import { useAuth } from "../../Context/AuthContext";
+import Swal from "sweetalert2";
 
 const Navbar = () => {
   // modal openar
@@ -22,6 +25,34 @@ const Navbar = () => {
 
   // Booking modal
   const { openBookingModal } = useBookingModal();
+
+  // Auth and navigation
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Handle booking button click - requires authentication
+  const handleBookingClick = () => {
+    if (isAuthenticated) {
+      openBookingModal();
+      setIsOpen(false); // close mobile menu if open
+    } else {
+      Swal.fire({
+        title: "Login Required",
+        text: "Please log in to book a room",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#006938",
+        cancelButtonColor: "#c49e72",
+        confirmButtonText: "Login",
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/login");
+        }
+      });
+      setIsOpen(false);
+    }
+  };
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);
@@ -75,10 +106,7 @@ const Navbar = () => {
   <div className="flex items-center gap-2">
     {/* Booking Online FIRST */}
     <button
-      onClick={() => {
-        openBookingModal();
-        setIsOpen(false); // close mobile menu if open
-      }}
+      onClick={handleBookingClick}
       className="text-[10px] xs:text-xs px-3 py-1 border border-white rounded-sm uppercase tracking-[0.08em] font-Garamond"
     >
       Booking Online
@@ -101,10 +129,8 @@ const Navbar = () => {
       )}
     </span>
 
-    {/* Login */}
-    <Link to="/login" className="cursor-pointer" title="Login">
-      <FaUserCircle className="text-white" size={20} />
-    </Link>
+    {/* User Profile / Login */}
+    <UserProfileDropdown size={20} />
 
     {/* Menu (hamburger) */}
     <button
@@ -324,15 +350,12 @@ const Navbar = () => {
                 />
               )}
             </span>
-            <button onClick={openBookingModal} className="btn-secondary">
+            <button onClick={handleBookingClick} className="btn-secondary">
               Booking Online
             </button>
-            <Link to="/login" className="ml-3 cursor-pointer group" title="Login">
-              <FaUserCircle
-                className="text-white group-hover:scale-110 transition-all duration-300"
-                size={35}
-              />
-            </Link>
+            <div className="ml-3">
+              <UserProfileDropdown size={35} />
+            </div>
           </div>
         </div>
       </div>

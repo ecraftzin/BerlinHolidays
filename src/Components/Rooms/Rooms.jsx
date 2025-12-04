@@ -64,8 +64,7 @@ const Rooms = () => {
         <div
           className="Container-Hero bg-lightBlack dark:bg-normalBlack  grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-5 items-center justify-center font-Lora py-3 lg:py-4 xl:py-5 2xl:py-6 border-t-[3px] border-t-khaki mt-[-75px]  left-0 right-0 z-[1]"
           data-aos="fade-down"
-          data-aos-duration="1000"
-        >
+          data-aos-duration="1000">
           <div className="p-3">
             <p className="text-sm text-lightGray ml-3">Check In</p>
             <div className="flex items-center pt-[2px] ">
@@ -95,8 +94,7 @@ const Rooms = () => {
                   : isActive
                   ? "active"
                   : ""} text-white  px-3 py-2 w-full block transition-all duration-300 group relative `}
-              to="#"
-            >
+              to="#">
               <span
                 className="flex items-center justify-between text-sm text-lightGray cursor-pointer"
                 onClick={() => setOpen(!open)}
@@ -110,23 +108,20 @@ const Rooms = () => {
                 <div
                   className={`shadow-2xl ${
                     open ? "" : "hidden"
-                  } rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 `}
-                >
+                  } rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 `}>
                   <div className="py-2 px-5 group cursor-pointer">
                     <li className="flex items-center justify-between">
                       <div className="">{room} Room</div>
                       <div className="flex items-center space-x-2">
                         <button
                           className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setRoom(room + 1)}
-                        >
+                          onClick={() => setRoom(room + 1)}>
                           +
                         </button>
                         <button
                           className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
                           onClick={() => setRoom(room - 1)}
-                          disabled={room <= 1}
-                        >
+                          disabled={room <= 1}>
                           -
                         </button>
                       </div>
@@ -140,13 +135,11 @@ const Rooms = () => {
           <div className="p-3">
             <div
               className={`text-white   px-3 py-2 w-full block transition-all duration-300 group relative `}
-              to="#"
-            >
+              to="#">
               <span
                 className="flex items-center justify-between text-sm text-lightGray cursor-pointer"
                 onClick={() => setGuestOpen(!guestOpen)}
-                title="click hear to open and close Adult And Children extender"
-              >
+                title="click hear to open and close Adult And Children extender">
                 Guests
                 <BiChevronDown className="" />
               </span>
@@ -157,23 +150,20 @@ const Rooms = () => {
                 <div
                   className={`shadow-2xl ${
                     guestOpen ? "" : "hidden"
-                  } rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 left`}
-                >
+                  } rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 left`}>
                   <div className="py-2 px-5 group cursor-pointer">
                     <li className="flex items-center justify-between">
                       <div className="">{adult} Adult</div>
                       <div className="flex items-center space-x-2">
                         <button
                           className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setAdult(adult + 1)}
-                        >
+                          onClick={() => setAdult(adult + 1)}>
                           +
                         </button>
                         <button
                           className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
                           onClick={() => setAdult(adult - 1)}
-                          disabled={adult <= 1}
-                        >
+                          disabled={adult <= 1}>
                           -
                         </button>
                       </div>
@@ -183,15 +173,13 @@ const Rooms = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
-                          onClick={() => setChildren(children + 1)}
-                        >
+                          onClick={() => setChildren(children + 1)}>
                           +
                         </button>
                         <button
                           className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
                           onClick={() => setChildren(children - 1)}
-                          disabled={children < 1}
-                        >
+                          disabled={children < 1}>
                           -
                         </button>
                       </div>

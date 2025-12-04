@@ -8,6 +8,7 @@ import { getRoomTypeBySlug } from "../../services/roomService";
 import { createBooking } from "../../services/bookingService";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { useAuth } from "../../Context/AuthContext";
 
 const RoomDetails = () => {
   const [imageIndex, setImageIndex] = useState(0);
@@ -18,6 +19,7 @@ const RoomDetails = () => {
   const bookingsData = location.state && location.state;
 
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   // Booking form state - interactive fields
   const [bookingFormData, setBookingFormData] = useState({
@@ -79,6 +81,25 @@ const RoomDetails = () => {
 
   // booking alert message - now saves to database
   const setAlert = async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      const result = await Swal.fire({
+        title: "Login Required",
+        text: "Please log in to book a room",
+        icon: "info",
+        showCancelButton: true,
+        confirmButtonColor: "#006938",
+        cancelButtonColor: "#c49e72",
+        confirmButtonText: "Login",
+        cancelButtonText: "Cancel",
+      });
+
+      if (result.isConfirmed) {
+        navigate("/login");
+      }
+      return;
+    }
+
     // First, collect contact information
      const { value: formValues } = await Swal.fire({
     title: "Your Contact Details",

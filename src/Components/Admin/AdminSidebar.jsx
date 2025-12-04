@@ -131,7 +131,7 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
               <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center"
               style={{ backgroundColor: "#c49e72" }}>
               <img 
-               src="/public/fav-icon/BERL logo .png" 
+               src="/public/fav-icon/berlinlogo.png" 
               alt="Berlin Holidays Logo" 
                className="w-full h-full object-contain"
                  />

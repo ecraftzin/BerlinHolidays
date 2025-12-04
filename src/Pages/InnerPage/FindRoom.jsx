@@ -2,22 +2,18 @@ import { BiChevronDown } from "react-icons/bi";
 import BreadCrumb from "../../BreadCrumb/BreadCrumb";
 import { useState, useEffect } from "react";
 import { FaStar, FaRegStar } from "react-icons/fa6";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { BsArrowRight } from "react-icons/bs";
 import { MdEmail, MdOutlineShareLocation } from "react-icons/md";
 import { IoIosCall } from "react-icons/io";
 import Swal from "sweetalert2";
 import emailjs from "@emailjs/browser";
 import { getActiveRoomTypes } from "../../services/roomService";
-import "react-datepicker/dist/react-datepicker.css";
-import DatePicker from "react-datepicker";
+import { getAvailableRoomTypesForDateRange } from "../../services/availabilityService";
 
 
 
 const FindRoom = () => {
-  //  room info
-  const location = useLocation();
-  const roomsData = location.state && location.state;
   const [open, setOpen] = useState(false);
   const [guestOpen, setGuestOpen] = useState(false);
   const [room, setRoom] = useState(1);
@@ -36,8 +32,10 @@ const FindRoom = () => {
   // Room types from database
   const [roomTypes, setRoomTypes] = useState([]);
   const [loadingRooms, setLoadingRooms] = useState(true);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [searchMessage, setSearchMessage] = useState("");
 
-  // Fetch room types from database
+  // Fetch all room types initially
   useEffect(() => {
     const fetchRoomTypes = async () => {
       setLoadingRooms(true);
@@ -49,6 +47,52 @@ const FindRoom = () => {
     };
     fetchRoomTypes();
   }, []);
+
+  // Search for available rooms
+  const handleSearch = async () => {
+    if (!selectedInDate || !selectedOutDate) {
+      Swal.fire({
+        title: "Missing Dates",
+        text: "Please select both check-in and check-out dates",
+        icon: "warning",
+        confirmButtonColor: "#c49e72",
+      });
+      return;
+    }
+
+    if (new Date(selectedInDate) >= new Date(selectedOutDate)) {
+      Swal.fire({
+        title: "Invalid Dates",
+        text: "Check-out date must be after check-in date",
+        icon: "error",
+        confirmButtonColor: "#c49e72",
+      });
+      return;
+    }
+
+    setLoadingRooms(true);
+    setHasSearched(true);
+
+    const result = await getAvailableRoomTypesForDateRange(selectedInDate, selectedOutDate, room);
+
+    if (!result.error && result.data) {
+      setRoomTypes(result.data);
+      if (result.data.length === 0) {
+        setSearchMessage("No rooms available for the selected dates. Please try different dates.");
+      } else {
+        setSearchMessage(`${result.data.length} room${result.data.length > 1 ? 's' : ''} available for your dates`);
+      }
+    } else {
+      // On error, show all rooms
+      const allRooms = await getActiveRoomTypes();
+      if (!allRooms.error && allRooms.data) {
+        setRoomTypes(allRooms.data);
+      }
+      setSearchMessage("Showing all rooms");
+    }
+
+    setLoadingRooms(false);
+  };
 
   // Helper function to render star rating
   const renderStars = (rating) => {
@@ -64,22 +108,7 @@ const FindRoom = () => {
     return stars;
   };
 
-  const handleCheckInDate = (e) => {
-    let newDate = e.target.value;
-    setSelectedInDate(newDate);
-  };
-  const handleCheckOutDate = (e) => {
-    let newDate = e.target.value;
-    setSelectedOutDate(newDate);
-  };
-  const bookingInfo = {
-    ...roomsData,
-    selectedInDate,
-    selectedOutDate,
-    room,
-    adult,
-    children,
-  };
+
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -217,163 +246,182 @@ const FindRoom = () => {
           CHECK Availability
         </h1>
         {/* Date and room info - Responsive Form */}
+        <div className="relative z-[1] ">
         <div
-          className="Container bg-white dark:bg-lightBlack grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 items-center justify-center font-Lora py-4 lg:py-5 xl:py-6 border-t-[3px] border-t-khaki px-4 sm:px-5 md:px-7 2xl:px-10 gap-2 sm:gap-3"
-          data-aos="zoom-in-up"
+          className="Container-Hero bg-lightBlack dark:bg-normalBlack  grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-5 items-center justify-center font-Lora py-3 lg:py-4 xl:py-5 2xl:py-6 border-t-[3px] border-t-khaki mt-[-75px]  left-0 right-0 z-[1]"
+          data-aos="fade-down"
           data-aos-duration="1000"
         >
-          {/* Check In Date */}
-          <div className="p-2 sm:p-3 w-full">
-            <p className="text-xs sm:text-sm text-gray dark:text-lightGray mb-1">Check In</p>
-            <div className="relative">
+          <div className="p-3">
+            <p className="text-sm text-lightGray ml-3">Check In</p>
+            <div className="flex items-center pt-[2px] ">
               <input
                 type="date"
-                required
-                min={new Date().toISOString().split('T')[0]}
-                className="w-full h-10 sm:h-11 px-3 border border-gray/30 dark:border-gray/50 rounded-md bg-transparent focus:outline-none focus:border-khaki text-lightBlack dark:text-white text-sm sm:text-base cursor-pointer appearance-none"
                 value={selectedInDate}
-                onChange={handleCheckInDate}
-                style={{
-                  colorScheme: 'light dark'
-                }}
+                onChange={(e) => setSelectedInDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+                className="border-none bg-transparent focus:outline-transparent focus:border-transparent text-white focus:border-none outline-0  text-sm lg:text-base focus:ring-transparent"
+                required
               />
             </div>
           </div>
-
-          {/* Check Out Date */}
-          <div className="p-2 sm:p-3 w-full">
-            <p className="text-xs sm:text-sm text-gray dark:text-lightGray mb-1">Check Out</p>
-            <div className="relative">
+          <div className="p-3">
+            <p className="text-sm text-lightGray ml-3">Check Out</p>
+            <div className="flex items-center pt-[2px] ">
               <input
                 type="date"
-                required
-                min={selectedInDate || new Date().toISOString().split('T')[0]}
-                className="w-full h-10 sm:h-11 px-3 border border-gray/30 dark:border-gray/50 rounded-md bg-transparent focus:outline-none focus:border-khaki text-lightBlack dark:text-white text-sm sm:text-base cursor-pointer appearance-none"
                 value={selectedOutDate}
-                onChange={handleCheckOutDate}
-                style={{
-                  colorScheme: 'light dark'
-                }}
+                onChange={(e) => setSelectedOutDate(e.target.value)}
+                min={selectedInDate || new Date().toISOString().split('T')[0]}
+                className="border-none bg-transparent focus:outline-transparent focus:border-transparent text-white focus:border-none outline-0  text-sm lg:text-base focus:ring-transparent"
+                required
               />
             </div>
           </div>
-
-          {/* Rooms Selector */}
-          <div className="p-2 sm:p-3 w-full">
-            <div className="relative">
-              <p className="text-xs sm:text-sm text-gray dark:text-lightGray mb-1">Rooms</p>
-              <div
-                className="h-10 sm:h-11 px-3 border border-gray/30 dark:border-gray/50 rounded-md flex items-center justify-between cursor-pointer hover:border-khaki transition-colors"
+          <div className="p-3">
+            <div
+              className={`${({ isActive, isPending }) =>
+                isPending
+                  ? "pending"
+                  : isActive
+                  ? "active"
+                  : ""} text-white  px-3 py-2 w-full block transition-all duration-300 group relative `}
+              to="#"
+            >
+              <span
+                className="flex items-center justify-between text-sm text-lightGray cursor-pointer"
                 onClick={() => setOpen(!open)}
-                title="Click to select rooms"
+                title="click hear to open and close rooms extender"
               >
-                <span className="text-sm sm:text-base text-lightBlack dark:text-white">
-                  {room} Room{room > 1 ? 's' : ''}
-                </span>
-                <BiChevronDown className={`text-gray transition-transform ${open ? 'rotate-180' : ''}`} />
-              </div>
-              {open && (
-                <div className="absolute top-full left-0 right-0 mt-2 z-20 shadow-2xl rounded-md bg-white dark:bg-normalBlack border border-gray/20 py-3 px-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-lightBlack dark:text-white">{room} Room{room > 1 ? 's' : ''}</span>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors"
-                        onClick={(e) => { e.stopPropagation(); setRoom(room + 1); }}
-                      >
-                        +
-                      </button>
-                      <button
-                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors disabled:opacity-50"
-                        onClick={(e) => { e.stopPropagation(); setRoom(room - 1); }}
-                        disabled={room <= 1}
-                      >
-                        -
-                      </button>
-                    </div>
+                Rooms
+                <BiChevronDown className="" />
+              </span>
+              <div className="pt-[10px] text-sm sm:text-base">{room} Room</div>
+              <div className="absolute pt-5  z-20">
+                <div
+                  className={`shadow-2xl ${
+                    open ? "" : "hidden"
+                  } rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 `}
+                >
+                  <div className="py-2 px-5 group cursor-pointer">
+                    <li className="flex items-center justify-between">
+                      <div className="">{room} Room</div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
+                          onClick={() => setRoom(room + 1)}
+                        >
+                          +
+                        </button>
+                        <button
+                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
+                          onClick={() => setRoom(room - 1)}
+                          disabled={room <= 1}
+                        >
+                          -
+                        </button>
+                      </div>
+                    </li>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
 
-          {/* Guests Selector */}
-          <div className="p-2 sm:p-3 w-full">
-            <div className="relative">
-              <p className="text-xs sm:text-sm text-gray dark:text-lightGray mb-1">Guests</p>
-              <div
-                className="h-10 sm:h-11 px-3 border border-gray/30 dark:border-gray/50 rounded-md flex items-center justify-between cursor-pointer hover:border-khaki transition-colors"
+          <div className="p-3">
+            <div
+              className={`text-white   px-3 py-2 w-full block transition-all duration-300 group relative `}
+              to="#"
+            >
+              <span
+                className="flex items-center justify-between text-sm text-lightGray cursor-pointer"
                 onClick={() => setGuestOpen(!guestOpen)}
-                title="Click to select guests"
+                title="click hear to open and close Adult And Children extender"
               >
-                <span className="text-sm sm:text-base text-lightBlack dark:text-white">
-                  {adult} Adult{adult > 1 ? 's' : ''}, {children} Child{children !== 1 ? 'ren' : ''}
-                </span>
-                <BiChevronDown className={`text-gray transition-transform ${guestOpen ? 'rotate-180' : ''}`} />
+                Guests
+                <BiChevronDown className="" />
+              </span>
+              <div className="pt-[10px] text-sm sm:text-base">
+                {adult} Adult, {children} Child
               </div>
-              {guestOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 z-20 shadow-2xl rounded-md bg-white dark:bg-normalBlack border border-gray/20 py-3 px-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-lightBlack dark:text-white">{adult} Adult{adult > 1 ? 's' : ''}</span>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors"
-                        onClick={(e) => { e.stopPropagation(); setAdult(adult + 1); }}
-                      >
-                        +
-                      </button>
-                      <button
-                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors disabled:opacity-50"
-                        onClick={(e) => { e.stopPropagation(); setAdult(adult - 1); }}
-                        disabled={adult <= 1}
-                      >
-                        -
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-lightBlack dark:text-white">{children} Child{children !== 1 ? 'ren' : ''}</span>
-                    <div className="flex items-center space-x-2">
-                      <button
-                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors"
-                        onClick={(e) => { e.stopPropagation(); setChildren(children + 1); }}
-                      >
-                        +
-                      </button>
-                      <button
-                        className="w-7 h-7 bg-khaki text-white rounded hover:bg-opacity-80 transition-colors disabled:opacity-50"
-                        onClick={(e) => { e.stopPropagation(); setChildren(children - 1); }}
-                        disabled={children < 1}
-                      >
-                        -
-                      </button>
-                    </div>
+              <div className="absolute pt-5  z-20 ml-[-120px] sm:ml-0">
+                <div
+                  className={`shadow-2xl ${
+                    guestOpen ? "" : "hidden"
+                  } rounded-sm bg-white text-black w-60 text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 left`}
+                >
+                  <div className="py-2 px-5 group cursor-pointer">
+                    <li className="flex items-center justify-between">
+                      <div className="">{adult} Adult</div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
+                          onClick={() => setAdult(adult + 1)}
+                        >
+                          +
+                        </button>
+                        <button
+                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
+                          onClick={() => setAdult(adult - 1)}
+                          disabled={adult <= 1}
+                        >
+                          -
+                        </button>
+                      </div>
+                    </li>
+                    <li className="flex items-center justify-between mt-1">
+                      <div className="">{children} Child</div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
+                          onClick={() => setChildren(children + 1)}
+                        >
+                          +
+                        </button>
+                        <button
+                          className="w-5 h-5 md:w-6 md:h-6 bg-khaki text-white"
+                          onClick={() => setChildren(children - 1)}
+                          disabled={children < 1}
+                        >
+                          -
+                        </button>
+                      </div>
+                    </li>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
-
-          {/* Search Button */}
-          <div className="p-2 sm:p-3 w-full sm:col-span-2 lg:col-span-1">
-            <Link to="/room" state={bookingInfo ? bookingInfo : ""} className="block">
-              <button className="w-full h-10 sm:h-11 text-sm sm:text-[15px] bg-khaki font-Garamond text-white rounded-md hover:bg-opacity-90 transition-colors">
-                Search Rooms
-              </button>
-            </Link>
-          </div>
+          <button
+            onClick={handleSearch}
+            className="w-[142px] h-10 lg:h-[50px] text-[15px] bg-khaki font-Garamond border border-khaki text-white mx-auto col-span-2  md:col-span-1 lg:col-span-1 relative z-10 before:absolute before:top-0 before:right-0 before:-z-10 before:w-0 before:h-full before:bg-lightBlack before:transition-all before:duration-500 hover:before:w-full hover:before:left-0">
+            Search Rooms
+          </button>
         </div>
+      </div>
         {/* Room Details - Dynamic from Database */}
+        <div className="mt-14 2xl:mt-[60px] Container">
+          <h2 className="text-xl md:text-2xl lg:text-[28px] leading-7 md:leading-8 lg:leading-9 text-lightBlack dark:text-white font-Garamond font-semibold mb-6 text-center">
+            {hasSearched ? "Available Rooms" : "Our Rooms"}
+          </h2>
+          {searchMessage && (
+            <p className="text-center text-khaki font-Lora mb-6">{searchMessage}</p>
+          )}
+        </div>
         {loadingRooms ? (
-          <div className="mt-14 2xl:mt-[60px] text-center Container">
-            <p className="text-gray dark:text-lightGray font-Lora">Loading rooms...</p>
+          <div className="text-center Container">
+            <p className="text-gray dark:text-lightGray font-Lora">Searching for available rooms...</p>
           </div>
         ) : roomTypes.length === 0 ? (
-          <div className="mt-14 2xl:mt-[60px] text-center Container">
-            <p className="text-gray dark:text-lightGray font-Lora">No rooms available at the moment.</p>
+          <div className="text-center Container">
+            <p className="text-gray dark:text-lightGray font-Lora">
+              {hasSearched
+                ? "No rooms available for the selected dates. Please try different dates."
+                : "No rooms available at the moment."}
+            </p>
           </div>
         ) : (
-          <div className="mt-14 2xl:mt-[60px] grid items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 xl:gap-[30px] Container">
+          <div className="grid items-center grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 xl:gap-[30px] Container">
             {roomTypes.map((roomType) => (
               <div key={roomType.id} data-aos="zoom-in-up" data-aos-duration="1000">
                 <div className="overflow-x-hidden 3xl:w-[410px] group relative">

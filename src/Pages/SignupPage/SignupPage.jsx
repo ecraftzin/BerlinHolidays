@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaUser, FaPhone, FaUserPlus, FaEye, FaEyeSlash } from "react-icons/fa";
 import { BiSun } from "react-icons/bi";
 import { IoMoonSharp } from "react-icons/io5";
+import { supabase } from "../../config/supabaseClient";
 
 const SignupPage = () => {
   const [name, setName] = useState("");
@@ -13,12 +14,55 @@ const SignupPage = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "true"
   );
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  // Email validation function
+  const isValidEmail = (email) => {
+    // Standard email regex pattern - validates format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(email)) {
+      return false;
+    }
+
+    // Check for valid TLD (must have at least 2 characters)
+    const parts = email.split('@');
+    if (parts.length !== 2) return false;
+
+    const domain = parts[1];
+    const domainParts = domain.split('.');
+    const tld = domainParts[domainParts.length - 1];
+
+    if (tld.length < 2) {
+      return false;
+    }
+
+    // Block obvious dummy emails
+    const lowerEmail = email.toLowerCase();
+    const dummyEmails = [
+      'test@test.com',
+      'test@test.test',
+      'fake@fake.com',
+      'example@example.com',
+      'user@user.com',
+      'admin@admin.com',
+      'abc@abc.com',
+      'asdf@asdf.com',
+      'qwerty@qwerty.com',
+    ];
+
+    if (dummyEmails.includes(lowerEmail)) {
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -32,6 +76,13 @@ const SignupPage = () => {
       setError("Email is required");
       return;
     }
+
+    // Validate email format
+    if (!isValidEmail(email.trim())) {
+      setError("Please enter a valid email address. Dummy or test emails are not allowed.");
+      return;
+    }
+
     if (!phoneNumber.trim()) {
       setError("Phone number is required");
       return;
@@ -52,23 +103,56 @@ const SignupPage = () => {
       return;
     }
 
-    // DEMO ONLY - In production, this would call an API
-    // Store user data in localStorage (for demo purposes)
-    const userData = {
-      name,
-      email,
-      phoneNumber,
-      password, // In production, never store plain passwords!
-    };
-    
-    localStorage.setItem("signupData", JSON.stringify(userData));
-    
-    setSuccess("Account created successfully! Redirecting to login...");
-    
-    // Navigate to login page after 2 seconds
-    setTimeout(() => {
-      navigate("/login");
-    }, 2000);
+    setLoading(true);
+
+    try {
+      // Sign up with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name.trim(),
+            phone: phoneNumber.trim(),
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      // Create customer profile in database
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from("customer_profiles")
+          .insert({
+            user_id: authData.user.id,
+            name: name.trim(),
+            email: email.trim(),
+            phone: phoneNumber.trim(),
+          });
+
+        if (profileError) {
+          console.error("Profile creation error:", profileError);
+          // Don't throw - user is already created in auth
+        }
+      }
+
+      setSuccess("Account created successfully! You are now logged in. Redirecting...");
+
+      // Auto-login and redirect to homepage after signup
+      setTimeout(() => {
+        navigate("/");
+      }, 1500);
+    } catch (err) {
+      console.error("Signup error:", err);
+      if (err.message.includes("already registered")) {
+        setError("This email is already registered. Please login instead.");
+      } else {
+        setError(err.message || "Failed to create account. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleDarkMode = () => {
@@ -94,8 +178,7 @@ const SignupPage = () => {
       <button
         onClick={toggleDarkMode}
         className="fixed top-6 right-6 p-3 bg-white dark:bg-mediumBlack rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 group"
-        aria-label="Toggle Dark Mode"
-      >
+        aria-label="Toggle Dark Mode">
         {isDarkMode ? (
           <BiSun className="text-2xl text-khaki group-hover:rotate-180 transition-transform duration-500" />
         ) : (
@@ -125,8 +208,7 @@ const SignupPage = () => {
             <div className="space-y-2">
               <label
                 htmlFor="name"
-                className="block text-sm font-medium text-lightBlack dark:text-white font-Garamond uppercase tracking-wider"
-              >
+                className="block text-sm font-medium text-lightBlack dark:text-white font-Garamond uppercase tracking-wider">
                 Full Name <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -140,8 +222,7 @@ const SignupPage = () => {
                   onChange={(e) => setName(e.target.value)}
                   required
                   placeholder="Enter your full name"
-                  className="w-full pl-12 pr-4 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"
-                />
+                  className="w-full pl-12 pr-4 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"/>
               </div>
             </div>
 
@@ -149,8 +230,7 @@ const SignupPage = () => {
             <div className="space-y-2">
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-lightBlack dark:text-white font-Garamond uppercase tracking-wider"
-              >
+                className="block text-sm font-medium text-lightBlack dark:text-white font-Garamond uppercase tracking-wider">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -164,8 +244,7 @@ const SignupPage = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   placeholder="your.email@example.com"
-                  className="w-full pl-12 pr-4 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"
-                />
+                  className="w-full pl-12 pr-4 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"/>
               </div>
             </div>
 
@@ -173,13 +252,12 @@ const SignupPage = () => {
             <div className="space-y-2">
               <label
                 htmlFor="phoneNumber"
-                className="block text-sm font-medium text-lightBlack dark:text-white font-Garamond uppercase tracking-wider"
-              >
+                className="block text-sm font-medium text-lightBlack dark:text-white font-Garamond uppercase tracking-wider">
                 Phone Number <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <FaPhone className="text-khaki text-lg" />
+                  <FaPhone className="text-khaki text-lg"/>
                 </div>
                 <input
                   id="phoneNumber"
@@ -188,8 +266,7 @@ const SignupPage = () => {
                   onChange={(e) => setPhoneNumber(e.target.value)}
                   required
                   placeholder="Enter your phone number"
-                  className="w-full pl-12 pr-4 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"
-                />
+                  className="w-full pl-12 pr-4 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"/>
               </div>
             </div>
 
@@ -197,8 +274,7 @@ const SignupPage = () => {
             <div className="space-y-2">
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-lightBlack dark:text-white font-Garamond uppercase tracking-wider"
-              >
+                className="block text-sm font-medium text-lightBlack dark:text-white font-Garamond uppercase tracking-wider">
                 Password <span className="text-red-500">*</span>
               </label>
               <div className="relative">
@@ -212,13 +288,11 @@ const SignupPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Create a strong password"
-                  className="w-full pl-12 pr-12 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"
-                />
+                  className="w-full pl-12 pr-12 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"/>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray hover:text-khaki transition-colors duration-300"
-                >
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray hover:text-khaki transition-colors duration-300">
                   {showPassword ? (
                     <FaEyeSlash className="text-xl" />
                   ) : (
@@ -235,13 +309,11 @@ const SignupPage = () => {
                   <svg
                     className="w-5 h-5 text-red-500 mr-2"
                     fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
+                    viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
+                      clipRule="evenodd"/>
                   </svg>
                   <p className="text-sm text-red-700 dark:text-red-400 font-Lora">
                     {error}
@@ -257,13 +329,11 @@ const SignupPage = () => {
                   <svg
                     className="w-5 h-5 text-green-500 mr-2"
                     fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
+                    viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
+                      clipRule="evenodd"/>
                   </svg>
                   <p className="text-sm text-green-700 dark:text-green-400 font-Lora">
                     {success}
@@ -275,9 +345,9 @@ const SignupPage = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-khaki hover:bg-khaki/90 text-white font-Garamond uppercase tracking-wider py-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg font-semibold relative overflow-hidden group"
-            >
-              <span className="relative z-10">Create Account</span>
+              disabled={loading}
+              className="w-full bg-khaki hover:bg-khaki/90 text-white font-Garamond uppercase tracking-wider py-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg font-semibold relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed">
+              <span className="relative z-10">{loading ? "Creating Account..." : "Create Account"}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </button>
           </form>
@@ -288,8 +358,7 @@ const SignupPage = () => {
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="text-khaki hover:text-khaki/80 font-semibold transition-colors duration-300"
-              >
+                className="text-khaki hover:text-khaki/80 font-semibold transition-colors duration-300">
                 Sign In
               </Link>
             </p>

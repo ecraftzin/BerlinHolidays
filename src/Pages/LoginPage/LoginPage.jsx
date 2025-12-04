@@ -4,27 +4,55 @@ import { useNavigate, Link } from "react-router-dom";
 import { FaEnvelope, FaLock, FaUserShield, FaEye, FaEyeSlash } from "react-icons/fa";
 import { BiSun } from "react-icons/bi";
 import { IoMoonSharp } from "react-icons/io5";
+import { supabase } from "../../config/supabaseClient";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(
     localStorage.getItem("darkMode") === "true"
   );
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
+    setLoading(true);
 
-    // DEMO ONLY - replace with real API
-    if (email === "admin@berlinholidays.com" && password === "admin123") {
-      localStorage.setItem("auth", "1"); // simple flag for demo
-      navigate("/admin/dashboard");
-    } else {
-      setError("Invalid email or password. Please try again.");
+    try {
+      // Check for admin login first
+      if (email === "admin@berlinholidays.com" && password === "admin123") {
+        localStorage.setItem("auth", "1");
+        navigate("/admin/dashboard");
+        return;
+      }
+
+      // Supabase authentication for customers
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (authError) {
+        throw authError;
+      }
+
+      if (data.user) {
+        setSuccess("Login successful! Redirecting...");
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err.message || "Invalid email or password. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -188,12 +216,35 @@ const LoginPage = () => {
               </div>
             )}
 
+            {/* Success Message */}
+            {success && (
+              <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-500 p-4 rounded">
+                <div className="flex items-center">
+                  <svg
+                    className="w-5 h-5 text-green-500 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <p className="text-sm text-green-700 dark:text-green-400 font-Lora">
+                    {success}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full bg-khaki hover:bg-khaki/90 text-white font-Garamond uppercase tracking-wider py-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg font-semibold relative overflow-hidden group"
+              disabled={loading}
+              className="w-full bg-khaki hover:bg-khaki/90 text-white font-Garamond uppercase tracking-wider py-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-lg font-semibold relative overflow-hidden group disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <span className="relative z-10">Sign In</span>
+              <span className="relative z-10">{loading ? "Signing In..." : "Sign In"}</span>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             </button>
           </form>

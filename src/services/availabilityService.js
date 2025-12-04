@@ -271,3 +271,84 @@ export const deleteRoomAvailability = async (id) => {
   }
 };
 
+// Get available room types for date range
+export const getAvailableRoomTypesForDateRange = async (startDate, endDate, roomsNeeded = 1) => {
+  try {
+    // First, get all active room types
+    const { data: roomTypes, error: roomError } = await supabase
+      .from('room_types')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true });
+
+    if (roomError) throw roomError;
+
+    if (!roomTypes || roomTypes.length === 0) {
+      return { data: [], error: null };
+    }
+
+    // Generate array of dates in the range
+    const dates = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    // Don't include checkout date in availability check
+    for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+      dates.push(d.toISOString().split('T')[0]);
+    }
+
+    // Check availability for each room type
+    const availableRooms = [];
+
+    for (const roomType of roomTypes) {
+      // Get availability records for this room type in the date range
+      const { data: availabilityData, error: availError } = await supabase
+        .from('room_availability')
+        .select('*')
+        .eq('room_type_id', roomType.id)
+        .gte('date', startDate)
+        .lt('date', endDate)
+        .order('date', { ascending: true });
+
+      if (availError) {
+        console.error('Error checking availability for room:', roomType.id, availError);
+        continue;
+      }
+
+      // Check if room is available for all dates
+      let isAvailable = true;
+      let minAvailable = roomType.total_rooms || 8;
+
+      for (const date of dates) {
+        const availRecord = availabilityData?.find(a => a.date === date);
+
+        if (availRecord) {
+          // Check if blocked or sold out
+          if (availRecord.status === 'blocked' || availRecord.status === 'sold_out') {
+            isAvailable = false;
+            break;
+          }
+          // Check if enough rooms available
+          if (availRecord.available_rooms < roomsNeeded) {
+            isAvailable = false;
+            break;
+          }
+          minAvailable = Math.min(minAvailable, availRecord.available_rooms);
+        }
+        // If no availability record, assume room is available (default)
+      }
+
+      if (isAvailable) {
+        availableRooms.push({
+          ...roomType,
+          available_rooms: minAvailable,
+        });
+      }
+    }
+
+    return { data: availableRooms, error: null };
+  } catch (error) {
+    console.error('Error getting available room types:', error);
+    return { data: null, error };
+  }
+};
+

@@ -10,6 +10,7 @@ import HelmetChanger from "../Shared/Helmet/Helmet";
 import { BookingModalProvider } from "../Context/BookingModalContext";
 import BookingModal from "../Components/BookingForm/BookingModal";
 import { useBookingModal } from "../Context/BookingModalContext";
+import { AuthProvider } from "../Context/AuthContext";
 
 const MainContent = () => {
   const { isBookingModalOpen, closeBookingModal } = useBookingModal();
@@ -36,9 +37,11 @@ const Main = () => {
   }, []);
 
   return (
-    <BookingModalProvider>
-      <MainContent />
-    </BookingModalProvider>
+    <AuthProvider>
+      <BookingModalProvider>
+        <MainContent />
+      </BookingModalProvider>
+    </AuthProvider>
   );
 };
 

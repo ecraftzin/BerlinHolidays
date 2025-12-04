@@ -35,6 +35,10 @@ import SupabaseTest from "../Pages/SupabaseTest/SupabaseTest";
 import LoginPage from "../Pages/LoginPage/LoginPage";
 import SignupPage from "../Pages/SignupPage/SignupPage";
 
+// User Account Pages
+import MyAccount from "../Pages/MyAccount/MyAccount";
+import MyBookings from "../Pages/MyBookings/MyBookings";
+
 // Admin Pages
 import AdminLayout from "../Components/Admin/AdminLayout";
 import DashboardOverview from "../Pages/AdminDashboard/DashboardOverview";
@@ -112,6 +116,14 @@ const router = createBrowserRouter([
       {
         path: "/supabase-test",
         element: <SupabaseTest />,
+      },
+      {
+        path: "/my-account",
+        element: <MyAccount />,
+      },
+      {
+        path: "/my-bookings",
+        element: <MyBookings />,
       },
     ],
   },
