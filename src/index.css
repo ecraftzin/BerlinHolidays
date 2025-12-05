@@ -244,35 +244,3 @@ section.Container.py-20.lg\:py-\[120px\] {
   animation: fadeIn 3s ease-out, slideIn 2s ease-out;
 }
 
-/* Container for the availability form */
-.availability-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px; /* Adjust gap for space between fields */
-}
-
-/* Adjust date picker input styles */
-.date-picker {
-  width: 100%; /* Full width for date picker input */
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: transparent;
-}
-
-/* Adjust the button for search */
-.search-button {
-  padding: 12px 20px;
-  background-color: #c49e72; /* khaki color */
-  color: white;
-  font-size: 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.search-button:hover {
-  background-color: #b38d5d; /* Slightly darker khaki */
-}

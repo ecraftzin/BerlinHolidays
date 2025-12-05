@@ -250,7 +250,7 @@ const LoginPage = () => {
           </form>
 
           {/* Demo Credentials Info */}
-          <div className="mt-6 p-4 bg-khaki/10 dark:bg-khaki/5 rounded-lg border border-khaki/20">
+          {/* <div className="mt-6 p-4 bg-khaki/10 dark:bg-khaki/5 rounded-lg border border-khaki/20">
             <p className="text-xs text-center text-gray dark:text-lightGray font-Lora mb-2">
               <span className="font-semibold text-khaki">Demo Credentials:</span>
             </p>
@@ -260,7 +260,7 @@ const LoginPage = () => {
             <p className="text-xs text-center text-gray dark:text-lightGray font-Lora">
               Password: admin123
             </p>
-          </div>
+          </div> */}
 
           {/* Signup Link */}
           <div className="mt-6 text-center">
