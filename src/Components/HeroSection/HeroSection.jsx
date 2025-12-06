@@ -28,7 +28,7 @@ const HeroSection = () => {
         <SwiperSlide>
           <div className="relative w-full h-[700px] md:h-[800px] xl:h-[850px] 3xl:h-[950px] overflow-hidden">
             <video
-              src="https://ygaav3vv2u5jx1dw.public.blob.vercel-storage.com/berlinbannervideo.mov"
+              src="public/bannervideo/berlinbannervideo.mp4" // Local path to the video
               autoPlay
               muted
               loop
@@ -37,17 +37,16 @@ const HeroSection = () => {
             />
             {/* Overlay Text */}
             <div className="absolute inset-0 flex justify-center items-center text-center">
-             <h1
-  className="text-white font-extrabold text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
-  style={{
-    fontFamily: "'Cormorant Garamond', serif",
-    textShadow: "0 4px 8px rgba(0, 0, 0, 0.6)",
-    animation: "fadeIn 3s ease-out, slideIn 2s ease-out",
-  }}
->
-  BERLIN HOLIDAYS
-</h1>
-
+              <h1
+                className="text-white font-extrabold text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
+                style={{
+                  fontFamily: "'Cormorant Garamond', serif",
+                  textShadow: "0 4px 8px rgba(0, 0, 0, 0.6)",
+                  animation: "fadeIn 3s ease-out, slideIn 2s ease-out",
+                }}
+              >
+                BERLIN HOLIDAYS
+              </h1>
             </div>
           </div>
         </SwiperSlide>

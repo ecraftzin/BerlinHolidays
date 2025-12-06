@@ -12,7 +12,7 @@ const BreadCrumb = ({ title, home }) => {
       {!videoError ? (
         <video
           className="absolute inset-0 w-full h-full object-cover"
-          src="https://ygaav3vv2u5jx1dw.public.blob.vercel-storage.com/bredcrumpvideo.mp4"
+          src="/videobredcrump/bredcrumpvideo.mp4" // Updated video path
           autoPlay
           loop
           muted
