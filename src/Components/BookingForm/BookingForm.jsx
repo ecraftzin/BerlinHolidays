@@ -1,17 +1,18 @@
 // src/Components/BookingForm/BookingForm.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FaCalendarAlt, FaBed, FaUsers, FaChild, FaUserFriends, FaUser, FaEnvelope, FaPhone } from "react-icons/fa";
 import { BiChevronDown } from "react-icons/bi";
 import Swal from "sweetalert2";
 import { createBooking } from "../../services/bookingService";
-import { getActiveRoomTypes } from "../../services/roomService";
+import { getAvailableRoomsForBooking } from "../../services/availabilityService";
+import { useAuth } from "../../Context/AuthContext";
 
 const BookingForm = () => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     checkInDate: "",
     checkOutDate: "",
-    roomType: "",
-    rooms: 1,
+    selectedRooms: [], // Array of selected room IDs
     adults: 1,
     children: 0,
   });
@@ -24,18 +25,55 @@ const BookingForm = () => {
     phone: "",
     specialRequests: "",
   });
-  const [roomTypes, setRoomTypes] = useState([]);
+
+  // Available rooms for selected dates
+  const [availableRooms, setAvailableRooms] = useState([]);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+
+  // Fetch available rooms when dates change
+  const fetchAvailableRooms = useCallback(async () => {
+    if (!formData.checkInDate || !formData.checkOutDate) {
+      setAvailableRooms([]);
+      setFormData(prev => ({ ...prev, selectedRooms: [] }));
+      return;
+    }
+
+    // Validate dates
+    if (new Date(formData.checkOutDate) <= new Date(formData.checkInDate)) {
+      setAvailableRooms([]);
+      return;
+    }
+
+    setCheckingAvailability(true);
+    try {
+      const result = await getAvailableRoomsForBooking(
+        formData.checkInDate,
+        formData.checkOutDate
+      );
+
+      if (!result.error && result.data) {
+        setAvailableRooms(result.data);
+        // Clear selected rooms that are no longer available
+        setFormData(prev => ({
+          ...prev,
+          selectedRooms: prev.selectedRooms.filter(id =>
+            result.data.some(room => room.id === id)
+          )
+        }));
+      } else {
+        setAvailableRooms([]);
+      }
+    } catch (error) {
+      console.error('Error fetching available rooms:', error);
+      setAvailableRooms([]);
+    } finally {
+      setCheckingAvailability(false);
+    }
+  }, [formData.checkInDate, formData.checkOutDate]);
 
   useEffect(() => {
-    fetchRoomTypes();
-  }, []);
-
-  const fetchRoomTypes = async () => {
-    const result = await getActiveRoomTypes();
-    if (result.data) {
-      setRoomTypes(result.data);
-    }
-  };
+    fetchAvailableRooms();
+  }, [fetchAvailableRooms]);
 
   // Get today's date in YYYY-MM-DD format for min date
   const today = new Date().toISOString().split("T")[0];
@@ -48,7 +86,34 @@ const BookingForm = () => {
     }));
   };
 
+  // Toggle room selection
+  const handleRoomToggle = (roomId) => {
+    setFormData((prev) => {
+      const isSelected = prev.selectedRooms.includes(roomId);
+      if (isSelected) {
+        return {
+          ...prev,
+          selectedRooms: prev.selectedRooms.filter(id => id !== roomId)
+        };
+      } else {
+        return {
+          ...prev,
+          selectedRooms: [...prev.selectedRooms, roomId]
+        };
+      }
+    });
+  };
+
   const handleIncrement = (field) => {
+    // Limit adults to 2 per selected room
+    const roomCount = formData.selectedRooms.length || 1;
+    if (field === "adults" && formData.adults >= roomCount * 2) {
+      return;
+    }
+    // Limit children to 2 per selected room
+    if (field === "children" && formData.children >= roomCount * 2) {
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       [field]: prev[field] + 1,
@@ -56,7 +121,7 @@ const BookingForm = () => {
   };
 
   const handleDecrement = (field) => {
-    if (formData[field] > (field === "rooms" || field === "adults" ? 1 : 0)) {
+    if (formData[field] > (field === "adults" ? 1 : 0)) {
       setFormData((prev) => ({
         ...prev,
         [field]: prev[field] - 1,
@@ -96,21 +161,21 @@ const BookingForm = () => {
       return;
     }
 
-    if (!formData.roomType) {
+    // Check if check-out is after check-in
+    if (new Date(formData.checkOutDate) <= new Date(formData.checkInDate)) {
       Swal.fire({
         title: "Error",
-        text: "Please select a room type",
+        text: "Check-out date must be after check-in date",
         icon: "error",
         confirmButtonColor: "#006938",
       });
       return;
     }
 
-    // Check if check-out is after check-in
-    if (new Date(formData.checkOutDate) <= new Date(formData.checkInDate)) {
+    if (formData.selectedRooms.length === 0) {
       Swal.fire({
         title: "Error",
-        text: "Check-out date must be after check-in date",
+        text: "Please select at least one room",
         icon: "error",
         confirmButtonColor: "#006938",
       });
@@ -151,6 +216,12 @@ const BookingForm = () => {
         (1000 * 60 * 60 * 24)
     );
 
+    // Get selected room details
+    const selectedRoomDetails = availableRooms.filter(room =>
+      formData.selectedRooms.includes(room.id)
+    );
+    const roomNames = selectedRoomDetails.map(r => r.name).join(', ');
+
     // Show confirmation
     const result = await Swal.fire({
       title: "Confirm Booking",
@@ -165,7 +236,7 @@ const BookingForm = () => {
           <p style="margin: 5px 0;"><strong>Check-in:</strong> ${new Date(formData.checkInDate).toLocaleDateString()}</p>
           <p style="margin: 5px 0;"><strong>Check-out:</strong> ${new Date(formData.checkOutDate).toLocaleDateString()}</p>
           <p style="margin: 5px 0;"><strong>Nights:</strong> ${nights}</p>
-          <p style="margin: 5px 0;"><strong>Rooms:</strong> ${formData.rooms}</p>
+          <p style="margin: 5px 0;"><strong>Rooms:</strong> ${roomNames}</p>
           <p style="margin: 5px 0;"><strong>Adults:</strong> ${formData.adults}</p>
           <p style="margin: 5px 0;"><strong>Children:</strong> ${formData.children}</p>
           ${contactData.specialRequests ? `<p style="margin: 5px 0;"><strong>Special Requests:</strong> ${contactData.specialRequests}</p>` : ''}
@@ -180,29 +251,40 @@ const BookingForm = () => {
     });
 
     if (result.isConfirmed) {
-      // Get selected room details
-      const selectedRoom = roomTypes.find(room => room.id === formData.roomType);
+      // Create bookings for each selected room
+      let allSuccess = true;
+      let errorMessage = "";
 
-      // Save booking to database
-      const bookingData = {
-        customer_name: contactData.name,
-        customer_email: contactData.email,
-        customer_phone: contactData.phone || null,
-        room_id: formData.roomType,
-        room_name: selectedRoom ? selectedRoom.name : "Room",
-        check_in_date: formData.checkInDate,
-        check_out_date: formData.checkOutDate,
-        number_of_rooms: formData.rooms,
-        number_of_adults: formData.adults,
-        number_of_children: formData.children,
-        total_guests: totalGuests,
-        special_requests: contactData.specialRequests || null,
-        status: "pending",
-      };
+      for (const roomId of formData.selectedRooms) {
+        const room = availableRooms.find(r => r.id === roomId);
+        const bookingData = {
+          user_id: user?.id || null,
+          customer_name: contactData.name,
+          customer_email: contactData.email,
+          customer_phone: contactData.phone || null,
+          room_id: roomId,
+          room_name: room ? room.name : "Room",
+          check_in_date: formData.checkInDate,
+          check_out_date: formData.checkOutDate,
+          number_of_rooms: 1, // Each booking is for 1 room type
+          number_of_adults: Math.ceil(formData.adults / formData.selectedRooms.length),
+          number_of_children: Math.ceil(formData.children / formData.selectedRooms.length),
+          total_guests: totalGuests,
+          special_requests: contactData.specialRequests || null,
+          status: "pending",
+        };
 
-      const saveResult = await createBooking(bookingData);
+        const saveResult = await createBooking(bookingData);
+        if (!saveResult.data) {
+          allSuccess = false;
+          errorMessage = saveResult.error?.code === 'INSUFFICIENT_ROOMS'
+            ? saveResult.error.message
+            : "Failed to submit booking. Please try again or contact us directly.";
+          break;
+        }
+      }
 
-      if (saveResult.data) {
+      if (allSuccess) {
         setShowContactForm(false);
         Swal.fire({
           title: "Success!",
@@ -215,8 +297,7 @@ const BookingForm = () => {
         setFormData({
           checkInDate: "",
           checkOutDate: "",
-          roomType: "",
-          rooms: 1,
+          selectedRooms: [],
           adults: 1,
           children: 0,
         });
@@ -226,13 +307,16 @@ const BookingForm = () => {
           phone: "",
           specialRequests: "",
         });
+        setAvailableRooms([]);
       } else {
         Swal.fire({
-          title: "Error",
-          text: "Failed to submit booking. Please try again or contact us directly.",
+          title: "Room Not Available",
+          text: errorMessage,
           icon: "error",
           confirmButtonColor: "#006938",
         });
+        // Refresh available rooms
+        fetchAvailableRooms();
       }
     }
   };
@@ -312,53 +396,68 @@ const BookingForm = () => {
                   />
                 </div>
 
-                {/* Room Type */}
-                <div className="relative" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="150">
+                {/* Room Available - Multi-select dropdown */}
+                <div className="relative md:col-span-2" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="150">
                   <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-base mb-3 uppercase">
                     <FaBed className="inline mr-2 text-[#006938]" />
-                    Room Type
+                    Room Available
+                    {checkingAvailability && (
+                      <span className="ml-2 text-xs text-gray-500 font-normal">(Checking...)</span>
+                    )}
                   </label>
-                  <select
-                    name="roomType"
-                    value={formData.roomType}
-                    onChange={handleInputChange}
-                    className="w-full h-14 px-4 border-2 border-[#e8e8e8] dark:border-gray-700 focus:border-[#c49e72] dark:focus:border-[#c49e72] text-lightBlack dark:text-white bg-[#f7f5f2] dark:bg-gray-800 outline-none rounded-lg font-Lora transition-all duration-300 focus:ring-2 focus:ring-[#c49e72]/20"
-                    required
-                  >
-                    <option value="">Select Room Type</option>
-                    {roomTypes.map((room) => (
-                      <option key={room.id} value={room.id}>
-                        {room.name} - ₹{room.base_price}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Rooms */}
-                <div className="relative" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
-                  <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-base mb-3 uppercase">
-                    <FaBed className="inline mr-2 text-[#006938]" />
-                    Rooms
-                  </label>
-                  <div className="flex items-center h-14 border-2 border-[#e8e8e8] dark:border-gray-700 bg-[#f7f5f2] dark:bg-gray-800 rounded-lg overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => handleDecrement("rooms")}
-                      className="w-14 h-full bg-[#c49e72] hover:bg-[#b38a5f] text-white font-bold text-xl transition-colors duration-300"
-                    >
-                      -
-                    </button>
-                    <div className="flex-1 text-center text-lightBlack dark:text-white font-bold font-Lora text-lg">
-                      {formData.rooms}
+                  {!formData.checkInDate || !formData.checkOutDate ? (
+                    <div className="w-full h-14 px-4 border-2 border-[#e8e8e8] dark:border-gray-700 bg-[#f7f5f2] dark:bg-gray-800 rounded-lg font-Lora flex items-center text-gray-500">
+                      Please select check-in and check-out dates first
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => handleIncrement("rooms")}
-                      className="w-14 h-full bg-[#c49e72] hover:bg-[#b38a5f] text-white font-bold text-xl transition-colors duration-300"
-                    >
-                      +
-                    </button>
-                  </div>
+                  ) : availableRooms.length === 0 && !checkingAvailability ? (
+                    <div className="w-full h-14 px-4 border-2 border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/20 rounded-lg font-Lora flex items-center text-red-600 dark:text-red-400">
+                      No rooms available for selected dates
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 border-2 border-[#e8e8e8] dark:border-gray-700 bg-[#f7f5f2] dark:bg-gray-800 rounded-lg">
+                      {availableRooms.map((room) => (
+                        <label
+                          key={room.id}
+                          className={`flex items-center p-3 rounded-lg cursor-pointer transition-all duration-300 ${
+                            formData.selectedRooms.includes(room.id)
+                              ? 'bg-[#006938] text-white'
+                              : 'bg-white dark:bg-gray-700 hover:bg-[#c49e72]/20'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.selectedRooms.includes(room.id)}
+                            onChange={() => handleRoomToggle(room.id)}
+                            className="sr-only"
+                          />
+                          <div className="flex-1">
+                            <span className={`font-Lora text-sm ${formData.selectedRooms.includes(room.id) ? 'text-white' : 'text-lightBlack dark:text-white'}`}>
+                              {room.name}
+                            </span>
+                            <span className={`block text-xs ${formData.selectedRooms.includes(room.id) ? 'text-white/80' : 'text-gray-500'}`}>
+                              ₹{room.base_price}/night
+                            </span>
+                          </div>
+                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
+                            formData.selectedRooms.includes(room.id)
+                              ? 'bg-white border-white'
+                              : 'border-gray-400'
+                          }`}>
+                            {formData.selectedRooms.includes(room.id) && (
+                              <svg className="w-3 h-3 text-[#006938]" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {formData.selectedRooms.length > 0 && (
+                    <p className="mt-2 text-sm text-[#006938] font-Lora">
+                      {formData.selectedRooms.length} room{formData.selectedRooms.length !== 1 ? 's' : ''} selected
+                    </p>
+                  )}
                 </div>
 
                 {/* Guests Dropdown */}
@@ -497,9 +596,14 @@ const BookingForm = () => {
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray dark:text-lightGray mb-1">Rooms</p>
+                    <p className="text-gray dark:text-lightGray mb-1">Rooms Selected</p>
                     <p className="text-lightBlack dark:text-white font-semibold">
-                      {formData.rooms} Room{formData.rooms !== 1 ? "s" : ""}
+                      {formData.selectedRooms.length > 0
+                        ? availableRooms
+                            .filter(r => formData.selectedRooms.includes(r.id))
+                            .map(r => r.name)
+                            .join(', ')
+                        : "None selected"}
                     </p>
                   </div>
                   <div>

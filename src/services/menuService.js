@@ -1,4 +1,4 @@
-import { supabase } from "../config/supabaseClient";
+import { supabase, supabasePublic } from "../config/supabaseClient";
 
 // =============================================
 // MENU CATEGORIES OPERATIONS
@@ -23,11 +23,12 @@ export const getAllCategories = async () => {
 };
 
 /**
- * Get active menu categories only
+ * Get active menu categories only (for public pages)
+ * Uses supabasePublic client to avoid auth session issues
  */
 export const getActiveCategories = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from("menu_categories")
       .select("*")
       .eq("is_active", true)
@@ -141,10 +142,11 @@ export const getAllMenuItems = async () => {
 
 /**
  * Get active and available menu items only (for website)
+ * Uses supabasePublic client to avoid auth session issues
  */
 export const getActiveMenuItems = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from("menu_items")
       .select("*")
       .eq("is_active", true)
@@ -160,11 +162,12 @@ export const getActiveMenuItems = async () => {
 };
 
 /**
- * Get menu items by category
+ * Get menu items by category (for public pages)
+ * Uses supabasePublic client to avoid auth session issues
  */
 export const getMenuItemsByCategory = async (categoryName) => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from("menu_items")
       .select("*")
       .eq("category_name", categoryName)

@@ -25,14 +25,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // Check for admin login first
-      if (email === "admin@berlinholidays.com" && password === "admin123") {
-        localStorage.setItem("auth", "1");
-        navigate("/admin/dashboard");
-        return;
-      }
-
-      // Supabase authentication for customers
+      // Authenticate with Supabase for all users
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -43,10 +36,20 @@ const LoginPage = () => {
       }
 
       if (data.user) {
-        setSuccess("Login successful! Redirecting...");
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
+        // Check if admin email and redirect to admin dashboard
+        if (email === "admin@berlinholidays.com") {
+          localStorage.setItem("auth", "1");
+          setSuccess("Admin login successful! Redirecting...");
+          setTimeout(() => {
+            navigate("/admin/dashboard");
+          }, 500);
+        } else {
+          // Regular customer login
+          setSuccess("Login successful! Redirecting...");
+          setTimeout(() => {
+            navigate("/");
+          }, 1000);
+        }
       }
     } catch (err) {
       console.error("Login error:", err);

@@ -1,5 +1,5 @@
 // src/services/roomService.js
-import { supabase } from '../config/supabaseClient';
+import { supabase, supabasePublic } from '../config/supabaseClient';
 
 /**
  * Room Types Service
@@ -22,10 +22,11 @@ export const getAllRoomTypes = async () => {
   }
 };
 
-// Get active room types only
+// Get active room types only (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getActiveRoomTypes = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('room_types')
       .select('*')
       .eq('is_active', true)
@@ -35,6 +36,44 @@ export const getActiveRoomTypes = async () => {
     return { data, error: null };
   } catch (error) {
     console.error('Error fetching active room types:', error);
+    return { data: null, error };
+  }
+};
+
+// Get available room types for website display
+// Filters out rooms that are booked or under maintenance
+// Uses supabasePublic client to avoid auth session issues
+export const getAvailableRoomTypesForDisplay = async () => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+
+    // Use the public client that doesn't rely on auth session
+    const { data, error } = await supabasePublic
+      .from('room_types')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    // Client-side filtering for display
+    const filteredData = data?.filter(room => {
+      // Exclude rooms with status 'booked'
+      if (room.status === 'booked') return false;
+
+      // Exclude rooms with maintenance_until in the future
+      if (room.maintenance_until) {
+        const maintenanceDate = new Date(room.maintenance_until);
+        const todayDate = new Date(today);
+        if (maintenanceDate >= todayDate) return false;
+      }
+
+      return true;
+    }) || [];
+
+    return { data: filteredData, error: null };
+  } catch (error) {
+    console.error('Error fetching available room types for display:', error);
     return { data: null, error };
   }
 };

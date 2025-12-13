@@ -1,5 +1,5 @@
 // src/Context/AuthContext.jsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "../config/supabaseClient";
 
 const AuthContext = createContext();
@@ -21,16 +21,36 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Check current session
     const initializeAuth = async () => {
+      console.log('[AuthContext] Initializing auth...');
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
+        // Add timeout to prevent hanging
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Session check timeout')), 5000)
+        );
+
+        const { data: { session }, error } = await Promise.race([sessionPromise, timeoutPromise]);
+        console.log('[AuthContext] getSession result - session:', !!session, 'error:', error);
+
+        if (error) {
+          console.error('[AuthContext] Session error, clearing auth state');
+          setUser(null);
+          setCustomerProfile(null);
+        } else if (session?.user) {
           setUser(session.user);
-          await loadCustomerProfile(session.user.id);
-        } 
+          // Don't await loadCustomerProfile to prevent blocking
+          loadCustomerProfile(session.user.id).catch(err => {
+            console.error('[AuthContext] Failed to load customer profile:', err);
+          });
+        }
       } catch (error) {
-        console.error("Error initializing auth:", error);
+        console.error("[AuthContext] Error initializing auth:", error);
+        // Clear auth state on error to prevent hanging
+        setUser(null);
+        setCustomerProfile(null);
       } finally {
         setLoading(false);
+        console.log('[AuthContext] Auth initialization complete');
       }
     };
 
@@ -39,12 +59,18 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('[AuthContext] Auth state changed:', event);
         if (event === "SIGNED_IN" && session?.user) {
           setUser(session.user);
-          await loadCustomerProfile(session.user.id);
+          // Don't await loadCustomerProfile to prevent blocking
+          loadCustomerProfile(session.user.id).catch(err => {
+            console.error('[AuthContext] Failed to load customer profile:', err);
+          });
         } else if (event === "SIGNED_OUT") {
           setUser(null);
           setCustomerProfile(null);
+        } else if (event === "TOKEN_REFRESHED") {
+          console.log('[AuthContext] Token refreshed successfully');
         }
       }
     );
@@ -55,16 +81,18 @@ export const AuthProvider = ({ children }) => {
   // Load customer profile from database
   const loadCustomerProfile = async (userId) => {
     try {
+      console.log('[AuthContext] Loading customer profile for userId:', userId);
       const { data, error } = await supabase
         .from("customer_profiles")
         .select("*")
         .eq("user_id", userId)
         .maybeSingle();
 
+      console.log('[AuthContext] Customer profile load result - data:', data, 'error:', error);
       if (error) throw error;
       setCustomerProfile(data);
     } catch (error) {
-      console.error("Error loading customer profile:", error);
+      console.error("[AuthContext] Error loading customer profile:", error);
     }
   };
 
@@ -124,13 +152,31 @@ export const AuthProvider = ({ children }) => {
   // Sign out user
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // Clear state first to ensure UI updates immediately
       setUser(null);
       setCustomerProfile(null);
+
+      // Clear all auth-related localStorage items
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('sb-') || key === 'auth')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+
+      // Sign out from Supabase (use 'local' scope for reliability)
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
+
+      if (error) {
+        console.error("Sign out error:", error);
+      }
+
       return { error: null };
     } catch (error) {
       console.error("Sign out error:", error);
+      // State already cleared above
       return { error };
     }
   };

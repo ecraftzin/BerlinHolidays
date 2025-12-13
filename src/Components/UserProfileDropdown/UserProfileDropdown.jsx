@@ -1,13 +1,12 @@
 // src/Components/UserProfileDropdown/UserProfileDropdown.jsx
-import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { FaUserCircle, FaUser, FaCalendarAlt, FaSignOutAlt } from "react-icons/fa";
 import { useAuth } from "../../Context/AuthContext";
 
 const UserProfileDropdown = ({ size = 35, className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
   const { user, customerProfile, isAuthenticated, signOut, getUserInitial } = useAuth();
 
   // Close dropdown when clicking outside
@@ -24,8 +23,15 @@ const UserProfileDropdown = ({ size = 35, className = "" }) => {
 
   const handleLogout = async () => {
     setIsOpen(false);
-    await signOut();
-    navigate("/");
+    try {
+      await signOut();
+      // Force navigation and page refresh to ensure clean state
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Force logout anyway
+      window.location.href = "/";
+    }
   };
 
   // If not authenticated, show login link

@@ -1,5 +1,5 @@
 // src/services/restaurantService.js
-import { supabase } from '../config/supabaseClient';
+import { supabase, supabasePublic } from '../config/supabaseClient';
 
 /**
  * Restaurant Service
@@ -26,10 +26,11 @@ export const getAllCategories = async () => {
   }
 };
 
-// Get active categories
+// Get active categories (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getActiveCategories = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('restaurant_categories')
       .select('*')
       .eq('is_active', true)
@@ -162,10 +163,11 @@ export const getAllMenuItems = async () => {
   }
 };
 
-// Get menu items by category
+// Get menu items by category (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getMenuItemsByCategory = async (categoryId) => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('restaurant_menu_items')
       .select('*')
       .eq('category_id', categoryId)
@@ -179,10 +181,11 @@ export const getMenuItemsByCategory = async (categoryId) => {
   }
 };
 
-// Get available menu items
+// Get available menu items (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getAvailableMenuItems = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('restaurant_menu_items')
       .select(`
         *,

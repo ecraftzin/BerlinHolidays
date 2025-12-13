@@ -9,7 +9,7 @@ import { IoIosCall } from "react-icons/io";
 import { MdEmail, MdOutlineShareLocation } from "react-icons/md";
 import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
-import { getActiveRoomTypes } from "../../services/roomService";
+import { getAvailableRoomTypesForDisplay } from "../../services/roomService";
 import emailjs from "@emailjs/browser";
 
 const Room = () => {
@@ -23,11 +23,11 @@ const Room = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch room types from database
+  // Fetch room types from database (excluding booked and maintenance rooms)
   useEffect(() => {
     const fetchRooms = async () => {
       setLoading(true);
-      const result = await getActiveRoomTypes();
+      const result = await getAvailableRoomTypesForDisplay();
       if (!result.error && result.data) {
         setRoomTypes(result.data);
       }
@@ -269,7 +269,7 @@ const Room = () => {
                           {room.category_label || "Luxury Room"}
                         </h4>
                         <Link
-                          to="/room_details"
+                          to={`/room_details/${room.slug}`}
                           state={{ price: room.base_price, title: room.name, roomData: room }}
                         >
                           <h2 className="text-2xl lg:text-[24px] xl:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">

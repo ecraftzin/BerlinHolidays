@@ -6,7 +6,7 @@ import { useKeenSlider } from "keen-slider/react";
 import "keen-slider/keen-slider.min.css";
 import { useState, useEffect } from "react";
 import { BiChevronDown } from "react-icons/bi";
-import { getActiveRoomTypes } from "../../services";
+import { getAvailableRoomTypesForDisplay } from "../../services";
 
 // import required modules
 
@@ -27,7 +27,7 @@ const Rooms = () => {
 
   const fetchRooms = async () => {
     setLoading(true);
-    const { data, error } = await getActiveRoomTypes();
+    const { data, error } = await getAvailableRoomTypesForDisplay();
 
     if (!error && data) {
       setRooms(data.slice(0, 6)); // Show up to 6 rooms

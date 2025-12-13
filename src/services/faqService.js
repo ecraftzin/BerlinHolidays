@@ -1,5 +1,5 @@
 // src/services/faqService.js
-import { supabase } from '../config/supabaseClient';
+import { supabase, supabasePublic } from '../config/supabaseClient';
 
 /**
  * FAQ Service
@@ -22,10 +22,11 @@ export const getAllFAQs = async () => {
   }
 };
 
-// Get active FAQs
+// Get active FAQs (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getActiveFAQs = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('faqs')
       .select('*')
       .eq('is_active', true)

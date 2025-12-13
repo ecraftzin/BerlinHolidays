@@ -22,7 +22,6 @@ const RoomAvailability = () => {
     available_rooms: 0,
     blocked_rooms: 0,
     minimum_stay: 1,
-    reason: "",
     notes: "",
   });
 
@@ -148,7 +147,6 @@ const RoomAvailability = () => {
           available_rooms: firstRecord.available_rooms || 0,
           blocked_rooms: firstRecord.blocked_rooms || 0,
           minimum_stay: firstRecord.minimum_stay || 1,
-          reason: firstRecord.reason || "",
           notes: firstRecord.notes || "",
         }));
       }
@@ -171,7 +169,6 @@ const RoomAvailability = () => {
         available_rooms: previousData.available_rooms !== undefined ? previousData.available_rooms : room.total_rooms || 0,
         blocked_rooms: previousData.blocked_rooms !== undefined ? previousData.blocked_rooms : 0,
         minimum_stay: previousData.minimum_stay || 1,
-        reason: previousData.reason || "",
         notes: previousData.notes || "",
       };
 
@@ -185,7 +182,6 @@ const RoomAvailability = () => {
         available_rooms: room.total_rooms || 0,
         blocked_rooms: 0,
         minimum_stay: 1,
-        reason: "",
         notes: "",
       };
 
@@ -204,7 +200,6 @@ const RoomAvailability = () => {
       available_rooms: 0,
       blocked_rooms: 0,
       minimum_stay: 1,
-      reason: "",
       notes: "",
     });
   };
@@ -234,13 +229,16 @@ const RoomAvailability = () => {
       }
 
       // Create availability records for each date
-      const availabilityRecords = dates.map(date => ({
+      // Each room type represents a single physical room
+      const availabilityRecords = dates.map(dateStr => ({
         room_type_id: selectedRoom.id,
-        availability_date: date,
+        date: dateStr,
+        total_rooms: selectedRoom.total_rooms || 1,
         available_rooms: parseInt(formData.available_rooms),
         blocked_rooms: parseInt(formData.blocked_rooms),
+        booked_rooms: 0,
         minimum_stay: parseInt(formData.minimum_stay),
-        reason: formData.reason || null,
+        status: parseInt(formData.available_rooms) === 0 ? 'sold_out' : 'available',
         notes: formData.notes || null,
         updated_at: new Date().toISOString(),
       }));
@@ -251,7 +249,7 @@ const RoomAvailability = () => {
       const { data, error } = await supabase
         .from('room_availability')
         .upsert(availabilityRecords, {
-          onConflict: 'room_type_id,availability_date',
+          onConflict: 'room_type_id,date',
           ignoreDuplicates: false // This ensures updates happen
         })
         .select();
@@ -275,7 +273,6 @@ const RoomAvailability = () => {
           available_rooms: currentFormData.available_rooms,
           blocked_rooms: currentFormData.blocked_rooms,
           minimum_stay: currentFormData.minimum_stay,
-          reason: currentFormData.reason,
           notes: currentFormData.notes,
         }
       }));
@@ -468,20 +465,6 @@ const RoomAvailability = () => {
                       style={{ borderColor: "#c49e72" }}
                       placeholder="1"
                       min="1"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold font-Garamond mb-2" style={{ color: "#1e1e1e" }}>
-                      Reason
-                    </label>
-                    <input
-                      type="text"
-                      name="reason"
-                      value={formData.reason}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none font-Lora"
-                      style={{ borderColor: "#c49e72" }}
-                      placeholder="e.g., Maintenance, Special Event"
                     />
                   </div>
                   <div className="md:col-span-2">

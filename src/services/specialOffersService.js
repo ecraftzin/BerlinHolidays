@@ -1,5 +1,5 @@
 // src/services/specialOffersService.js
-import { supabase } from '../config/supabaseClient';
+import { supabase, supabasePublic } from '../config/supabaseClient';
 
 /**
  * Special Offers Service
@@ -22,10 +22,11 @@ export const getAllSpecialOffers = async () => {
   }
 };
 
-// Get active special offers
+// Get active special offers (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getActiveSpecialOffers = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('special_offers')
       .select('*')
       .eq('status', 'active')
@@ -39,10 +40,11 @@ export const getActiveSpecialOffers = async () => {
   }
 };
 
-// Get featured special offers
+// Get featured special offers (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getFeaturedSpecialOffers = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('special_offers')
       .select('*')
       .eq('is_featured', true)

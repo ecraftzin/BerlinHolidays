@@ -10,6 +10,8 @@ import Swal from "sweetalert2";
 import emailjs from "@emailjs/browser";
 import { getActiveRoomTypes } from "../../services/roomService";
 import { getAvailableRoomTypesForDateRange } from "../../services/availabilityService";
+import { useKeenSlider } from "keen-slider/react";
+import "keen-slider/keen-slider.min.css";
 
 
 
@@ -34,6 +36,34 @@ const FindRoom = () => {
   const [loadingRooms, setLoadingRooms] = useState(true);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchMessage, setSearchMessage] = useState("");
+
+  // Facilities slider breakpoints
+  const [sliderRef] = useKeenSlider({
+    breakpoints: {
+      "(min-width: 400px)": {
+        slides: { origin: "center", perView: 1 },
+        spacing: 10,
+      },
+      "(min-width: 500px)": {
+        slides: { origin: "center", perView: 1.5 },
+        spacing: 10,
+      },
+      "(min-width: 600px)": {
+        slides: { origin: "center", perView: 1 },
+        spacing: 15,
+      },
+      "(min-width: 768px)": {
+        slides: { origin: "center", perView: 1 },
+        spacing: 18,
+      },
+      "(min-width: 992px)": {
+        slides: { origin: "center", perView: 2 },
+        spacing: 20,
+      },
+    },
+    loop: true,
+    initial: 0,
+  });
 
   // Fetch all room types initially
   useEffect(() => {
@@ -79,6 +109,9 @@ const FindRoom = () => {
       setRoomTypes(result.data);
       if (result.data.length === 0) {
         setSearchMessage("No rooms available for the selected dates. Please try different dates.");
+      } else if (room > 1 && !result.hasEnoughRooms) {
+        // Show rooms but warn that not enough are available for requested amount
+        setSearchMessage(`${result.data.length} room${result.data.length > 1 ? 's' : ''} available. You requested ${room} rooms - please select ${room} from the available options below.`);
       } else {
         setSearchMessage(`${result.data.length} room${result.data.length > 1 ? 's' : ''} available for your dates`);
       }
@@ -436,7 +469,7 @@ const FindRoom = () => {
                         }}
                       />
                     </div>
-                    <Link to={`/room/${roomType.slug}`} state={{ roomData: roomType }}>
+                    <Link to={`/room_details/${roomType.slug}`} state={{ roomData: roomType }}>
                       <button className="flex items-center justify-center text-[15px] leading-[38px] bg-lightBlack absolute bottom-0 -left-40 px-5 text-white group-hover:left-0 transition-all duration-300 hover:bg-khaki">
                         View Details{" "}
                         <BsArrowRight className="w-4 h-4 ml-2 text-white" />
@@ -455,7 +488,7 @@ const FindRoom = () => {
                         <h4 className="text-sm leading-[26px] text-khaki uppercase font-semibold">
                           {roomType.category_label || "Premium Room"}
                         </h4>
-                        <Link to={`/room/${roomType.slug}`} state={{ roomData: roomType }}>
+                        <Link to={`/room_details/${roomType.slug}`} state={{ roomData: roomType }}>
                           <h2 className="text-2xl lg:text-[28px] leading-[26px] font-semibold text-lightBlack dark:text-white py-4">
                             {roomType.name}
                           </h2>
@@ -491,6 +524,108 @@ const FindRoom = () => {
           </div>
         )}
       </div>
+
+      {/* Extra Facilities Section */}
+      <div className="bg-normalBlack py-20 lg:py-[50px] relative">
+        <div className="Container pb-[100px]">
+          {/* Section heading */}
+          <div
+            className="flex items-center justify-between relative"
+            data-aos="fade-up"
+            data-aos-duration="1000"
+          >
+            <div className="sapce-y-3 md:space-y-4 lg:space-y-5 md:w-[450px] xl:w-[550px] font-Garamond">
+              <h5 className="text-base text-khaki leading-[26px] font-medium">
+                INDULGING IN THE FINER SIDE OF NATURE-INSPIRED LUXURY
+              </h5>
+              <h1 className="text-xl sm:text-3xl 2xl:text-[38px] leading-[38px] lg:leading-[44px] text-white font-semibold uppercase">
+                RESTORE EXTRA FECILITIES FOR A LUXURIOUS LIFE
+              </h1>
+            </div>
+          </div>
+          <hr className="w-full h-[2px] text-gray bg-gray mt-10" />
+
+          {/* Clients Facilities */}
+          <div className="mt-14 2xl:mt-[60px] grid grid-cols-6 gap-5 md:gap-[30px]">
+            <div
+              className="col-span-6 sm:col-span-2"
+              data-aos="zoom-in-up"
+              data-aos-duration="1000"
+            >
+              <img
+                src="/images/inner/faciliies-icon.png"
+                alt="facilities-icon"
+                className="w-10 h-10 md:w-20 md:h-20 xl:h-[100px] xl:w-[100px]"
+              />
+              <div className="my-5 2xl:my-[30px]">
+                <h2 className="text-white text-xl sm:text-2xl 2xl:text-3xl leading-7 md:leading-8 lg:leading-9 xl:leading-10 2xl:leading-[44px] font-semibold font-Garamond">
+                  SPA & Parlor Center
+                </h2>
+                <p className="text-sm sm:text-base font-Lora leading-[26px] text-lightGray">
+                  Rejuvenate your senses with authentic Ayurvedic therapies,
+                  rejuvenating massages, and modern beauty treatments — all
+                  designed to refresh your body and mind amidst Wayanad's
+                  calm surroundings.
+                </p>
+              </div>
+            </div>
+            {/* facilities slider */}
+            <div
+              ref={sliderRef}
+              className="keen-slider col-span-6 sm:col-span-4"
+              data-aos="zoom-in-up"
+              data-aos-duration="1000"
+            >
+              {/* slide 1 */}
+              <div className="keen-slider__slide number-slide1">
+                <div className="col-span-2 relative">
+                  <img
+                    src="/images/inner/facilities-1.jpg"
+                    className=""
+                    alt=""
+                  />
+                  <div className="inline-flex items-center justify-between bg-lightBlack hover:bg-whiteSmoke dark:hover:bg-white transition-all duration-300 w-[90%] float-right absolute bottom-0 right-[20px] group">
+                    <p className="text-white text-lg sm:text-xl lg:text-[18px] xl:text-[22px] group-hover:text-lightBlack leading-6 font-semibold font-Garamond px-5">
+                      Gym Training Ground
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {/* slide 2 */}
+              <div className="keen-slider__slide number-slide1">
+                <div className="col-span-2 relative">
+                  <img
+                    src="/images/inner/facilities-2.jpg"
+                    className=""
+                    alt=""
+                  />
+                  <div className="inline-flex items-center justify-between bg-lightBlack hover:bg-whiteSmoke dark:hover:bg-white transition-all duration-300 w-[90%] float-right absolute bottom-0 right-[20px] group">
+                    <p className="text-white text-lg sm:text-xl lg:text-[18px] xl:text-[22px] group-hover:text-lightBlack leading-6 font-semibold font-Garamond px-5">
+                      Indoor Swimming Pool
+                    </p>
+                  </div>
+                </div>
+              </div>
+              {/* slide 3 */}
+              <div className="keen-slider__slide number-slide1">
+                <div className="col-span-2 relative">
+                  <img
+                    src="/images/inner/facilities-3.jpg"
+                    className=""
+                    alt=""
+                  />
+                  <div className="inline-flex items-center justify-between bg-lightBlack hover:bg-whiteSmoke dark:hover:bg-white transition-all duration-300 w-[90%] float-right absolute bottom-0 right-[20px] group">
+                    <p className="text-white text-lg sm:text-xl lg:text-[18px] xl:text-[22px] group-hover:text-lightBlack leading-6 font-semibold font-Garamond px-5">
+                      Dining Area
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Contact form */}
       <div className="py-20 2xl:py-[120px] dark:bg-lightBlack">
         <div className="Container border border-lightGray dark:border-gray px-2 sm:px-7 md:px-10 lg:px-14 2xl:px-20 py-10 md:py-14 lg:py-18 xl:py-20 2xl:py-[100px]">

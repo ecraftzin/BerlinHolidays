@@ -83,17 +83,31 @@ export const checkEmailExists = async (email) => {
 // Booking Operations
 // ============================================
 
-// Get customer bookings
-export const getCustomerBookings = async (userId) => {
+// Get customer bookings - matches by user_id OR customer_email
+export const getCustomerBookings = async (userId, userEmail = null) => {
   try {
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+    // If we have an email, search by both user_id OR customer_email
+    // This ensures older bookings (before user_id was added) still show up
+    if (userEmail) {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("*")
+        .or(`user_id.eq.${userId},customer_email.ilike.${userEmail}`)
+        .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    return { data, error: null };
+      if (error) throw error;
+      return { data, error: null };
+    } else {
+      // Fallback to just user_id if no email provided
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      return { data, error: null };
+    }
   } catch (error) {
     console.error("Error fetching customer bookings:", error);
     return { data: null, error };

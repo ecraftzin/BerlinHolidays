@@ -11,12 +11,24 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-// Create and export Supabase client
+// Create and export Supabase client (for authenticated requests)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+  },
+});
+
+// Create a public Supabase client for anonymous/public data fetching
+// This client doesn't use any stored session, ensuring public data always loads
+// Uses a different storage key to avoid "Multiple GoTrueClient instances" warning
+export const supabasePublic = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+    detectSessionInUrl: false,
+    storageKey: 'sb-public-auth-token', // Different key to avoid conflicts
   },
 });
 

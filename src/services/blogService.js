@@ -1,5 +1,5 @@
 // src/services/blogService.js
-import { supabase } from '../config/supabaseClient';
+import { supabase, supabasePublic } from '../config/supabaseClient';
 
 /**
  * Blog Posts Service
@@ -36,10 +36,11 @@ export const getAllBlogPosts = async () => {
   }
 };
 
-// Fetch published blog posts only
+// Fetch published blog posts only (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getPublishedBlogPosts = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('blog_posts')
       .select(`
         *,

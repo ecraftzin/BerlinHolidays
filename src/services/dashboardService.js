@@ -19,7 +19,7 @@ export const getDashboardStatistics = async () => {
       supabase.from('room_types').select('id, total_rooms, available_rooms, is_active'),
       supabase.from('blog_posts').select('id, status, views'),
       supabase.from('special_offers').select('id, status'),
-      supabase.from('restaurant_menu_items').select('id, is_available'),
+      supabase.from('menu_items').select('id, is_available'),
     ]);
 
     // Process room statistics
@@ -242,8 +242,8 @@ export const getContentSummary = async () => {
       supabase.from('blog_posts').select('id', { count: 'exact', head: true }),
       supabase.from('room_types').select('id', { count: 'exact', head: true }),
       supabase.from('special_offers').select('id', { count: 'exact', head: true }),
-      supabase.from('restaurant_menu_items').select('id', { count: 'exact', head: true }),
-      supabase.from('restaurant_categories').select('id', { count: 'exact', head: true }),
+      supabase.from('menu_items').select('id', { count: 'exact', head: true }),
+      supabase.from('menu_categories').select('id', { count: 'exact', head: true }),
     ]);
 
     const summary = {

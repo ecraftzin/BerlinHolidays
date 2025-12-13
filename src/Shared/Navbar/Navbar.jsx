@@ -224,13 +224,7 @@ const Navbar = () => {
               </button>
               <div className="absolute pt-5 lg:pt-8 z-20">
                 <ul className="shadow-2xl hidden group-hover:block rounded-sm bg-white text-black w-[200px] text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 ">
-                  <div className=" px-5 group hover:bg-khaki hover:text-white">
-                    <li className="hover:ml-3 duration-300  ">
-                      <NavLink to="/room" className="block py-2">
-                        Room
-                      </NavLink>
-                    </li>
-                  </div>
+                  
                   <div className=" px-5 group hover:bg-khaki hover:text-white">
                     <li className="hover:ml-3 duration-300  ">
                       <NavLink to="/find_room" className="block py-2">

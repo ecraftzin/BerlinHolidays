@@ -1,14 +1,23 @@
 import { BsArrowLeft, BsArrowRight, BsCheck2 } from "react-icons/bs";
 import BreadCrumb from "../../BreadCrumb/BreadCrumb";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FiLogOut } from "react-icons/fi";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getRoomTypeBySlug } from "../../services/roomService";
 import { createBooking } from "../../services/bookingService";
+import { checkAvailabilityForBooking } from "../../services/availabilityService";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useAuth } from "../../Context/AuthContext";
+
+// Helper function to format date in local timezone (YYYY-MM-DD)
+const formatLocalDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const RoomDetails = () => {
   const [imageIndex, setImageIndex] = useState(0);
@@ -19,16 +28,21 @@ const RoomDetails = () => {
   const bookingsData = location.state && location.state;
 
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   // Booking form state - interactive fields
   const [bookingFormData, setBookingFormData] = useState({
-    checkInDate: bookingsData?.selectedInDate || new Date().toISOString().split('T')[0],
+    checkInDate: bookingsData?.selectedInDate || formatLocalDate(new Date()),
     checkOutDate: bookingsData?.selectedOutDate || "",
     adults: bookingsData?.adult || 1,
     children: bookingsData?.children || 0,
     rooms: bookingsData?.room ?? 1,
   });
+
+  // Availability state
+  const [availableRooms, setAvailableRooms] = useState(8); // Default to total rooms
+  const [isRoomAvailable, setIsRoomAvailable] = useState(true);
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   // Fetch room data by slug
   useEffect(() => {
@@ -54,6 +68,50 @@ const RoomDetails = () => {
 
     fetchRoomData();
   }, [slug, location.state]);
+
+  // Check availability when dates or room data changes
+  const checkRoomAvailability = useCallback(async () => {
+    if (!roomData?.id || !bookingFormData.checkInDate || !bookingFormData.checkOutDate) {
+      return;
+    }
+
+    setCheckingAvailability(true);
+    try {
+      const result = await checkAvailabilityForBooking(
+        roomData.id,
+        bookingFormData.checkInDate,
+        bookingFormData.checkOutDate,
+        1 // Check for at least 1 room
+      );
+
+      if (!result.error && result.data) {
+        const { isAvailable, availability } = result.data;
+
+        // Calculate minimum available rooms across all dates
+        // Each room type represents a single physical room
+        let minAvailable = roomData.total_rooms || 1;
+        if (availability && availability.length > 0) {
+          minAvailable = Math.min(...availability.map(a => a.available_rooms || 0));
+        }
+
+        setAvailableRooms(minAvailable);
+        setIsRoomAvailable(isAvailable && minAvailable > 0);
+
+        // If current rooms selection exceeds available, adjust it
+        if (bookingFormData.rooms > minAvailable && minAvailable > 0) {
+          setBookingFormData(prev => ({ ...prev, rooms: minAvailable }));
+        }
+      }
+    } catch (error) {
+      console.error('Error checking availability:', error);
+    } finally {
+      setCheckingAvailability(false);
+    }
+  }, [roomData, bookingFormData.checkInDate, bookingFormData.checkOutDate]);
+
+  useEffect(() => {
+    checkRoomAvailability();
+  }, [checkRoomAvailability]);
 
   const images = roomData?.images && roomData.images.length > 0
     ? roomData.images
@@ -81,6 +139,17 @@ const RoomDetails = () => {
 
   // booking alert message - now saves to database
   const setAlert = async () => {
+    // Check if room is available
+    if (!isRoomAvailable) {
+      Swal.fire({
+        title: "Room Not Available",
+        text: "This room is not available for the selected dates. Please choose different dates.",
+        icon: "error",
+        confirmButtonColor: "#006938",
+      });
+      return;
+    }
+
     // Check if user is authenticated
     if (!isAuthenticated) {
       const result = await Swal.fire({
@@ -266,6 +335,7 @@ const RoomDetails = () => {
     if (result.isConfirmed) {
       // Save booking to database
       const bookingData = {
+        user_id: user?.id || null, // Link booking to logged-in user
         customer_name: formValues.name,
         customer_email: formValues.email,
         customer_phone: formValues.phone || null,
@@ -531,17 +601,17 @@ const RoomDetails = () => {
               <DatePicker
                 selected={
                bookingFormData.checkInDate
-            ? new Date(bookingFormData.checkInDate)
+            ? new Date(bookingFormData.checkInDate + 'T00:00:00')
              : null
              }
            onChange={(date) =>
            setBookingFormData((prev) => ({
            ...prev,
-           checkInDate: date.toISOString().split("T")[0],
+           checkInDate: formatLocalDate(date),
          // optional: if checkout is before new check-in, reset it
           checkOutDate:
           prev.checkOutDate &&
-          new Date(prev.checkOutDate) <= date
+          new Date(prev.checkOutDate + 'T00:00:00') <= date
             ? ""
             : prev.checkOutDate,
       }))
@@ -562,18 +632,18 @@ const RoomDetails = () => {
      <DatePicker
        selected={
       bookingFormData.checkOutDate
-        ? new Date(bookingFormData.checkOutDate)
+        ? new Date(bookingFormData.checkOutDate + 'T00:00:00')
         : null
     }
     onChange={(date) =>
       setBookingFormData((prev) => ({
         ...prev,
-        checkOutDate: date.toISOString().split("T")[0],
+        checkOutDate: formatLocalDate(date),
       }))
     }
     minDate={
       bookingFormData.checkInDate
-        ? new Date(bookingFormData.checkInDate)
+        ? new Date(bookingFormData.checkInDate + 'T00:00:00')
         : new Date()
     }
     dateFormat="dd-MM-yyyy"
@@ -651,13 +721,14 @@ const RoomDetails = () => {
                   {/* Rooms Selector */}
                   <div className="bg-white dark:bg-lightBlack px-3 sm:px-5 2xl:px-6 py-3  border border-[#006938] rounded-md">
                     <label className="block text-xs font-Lora font-semibold text-gray dark:text-lightGray mb-2">
-                      Rooms
+                      Rooms {availableRooms > 0 && <span className="text-[#006938]">({availableRooms} available)</span>}
                     </label>
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => setBookingFormData(prev => ({ ...prev, rooms: Math.max(1, prev.rooms - 1) }))}
                         className="w-8 h-8 flex items-center justify-center bg-khaki text-white rounded-full hover:bg-opacity-80 transition-all"
+                        disabled={!isRoomAvailable || checkingAvailability}
                       >
                         -
                       </button>
@@ -667,13 +738,19 @@ const RoomDetails = () => {
                         value={bookingFormData.rooms}
                         onChange={handleBookingInputChange}
                         min="1"
-                        max="5"
+                        max={availableRooms}
                         className="w-16 text-center text-sm md:text-[15px] leading-[26px] font-Lora font-medium text-khaki bg-transparent border border-gray-300 dark:border-gray-600 rounded outline-none"
+                        disabled={!isRoomAvailable || checkingAvailability}
                       />
                       <button
                         type="button"
-                        onClick={() => setBookingFormData(prev => ({ ...prev, rooms: Math.min(5, prev.rooms + 1) }))}
-                        className="w-8 h-8 flex items-center justify-center bg-khaki text-white rounded-full hover:bg-opacity-80 transition-all"
+                        onClick={() => setBookingFormData(prev => ({ ...prev, rooms: Math.min(availableRooms, prev.rooms + 1) }))}
+                        className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                          bookingFormData.rooms >= availableRooms || !isRoomAvailable
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-khaki text-white hover:bg-opacity-80'
+                        }`}
+                        disabled={bookingFormData.rooms >= availableRooms || !isRoomAvailable || checkingAvailability}
                       >
                         +
                       </button>
@@ -682,12 +759,35 @@ const RoomDetails = () => {
                 </div>
               </div>
 
+              {/* Room Not Available Message */}
+              {!isRoomAvailable && bookingFormData.checkInDate && bookingFormData.checkOutDate && (
+                <div className="py-3 px-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md mb-4">
+                  <p className="text-red-600 dark:text-red-400 font-Lora text-sm text-center">
+                    This room is not available.
+                  </p>
+                </div>
+              )}
+
+              {/* Checking Availability Indicator */}
+              {checkingAvailability && (
+                <div className="py-2 text-center">
+                  <span className="text-gray dark:text-lightGray text-sm font-Lora">
+                    Checking availability...
+                  </span>
+                </div>
+              )}
+
               <div className="py-5">
                 <button
-                  className="bg-khaki w-full h-10 2xl:h-[50px] text-white font-Lora font-semibold px-5 hover-animBg after:rounded-none after:bg-normalBlack"
+                  className={`w-full h-10 2xl:h-[50px] font-Lora font-semibold px-5 ${
+                    isRoomAvailable && !checkingAvailability
+                      ? 'bg-khaki text-white hover-animBg after:rounded-none after:bg-normalBlack'
+                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  }`}
                   onClick={() => setAlert()}
+                  disabled={!isRoomAvailable || checkingAvailability}
                 >
-                  Confirm Booking
+                  {checkingAvailability ? 'Checking...' : 'Confirm Booking'}
                 </button>
               </div>
             </div>

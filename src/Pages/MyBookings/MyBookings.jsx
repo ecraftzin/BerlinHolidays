@@ -23,9 +23,11 @@ const MyBookings = () => {
   // Fetch bookings
   useEffect(() => {
     const fetchBookings = async () => {
+      setLoading(true); // Always set loading to true when starting fetch
       if (user?.id) {
         try {
-          const { data, error } = await getCustomerBookings(user.id);
+          // Pass both user_id and email to match bookings by either field
+          const { data, error } = await getCustomerBookings(user.id, user.email);
           if (error) throw error;
           setBookings(data || []);
         } catch (err) {
@@ -33,13 +35,19 @@ const MyBookings = () => {
         } finally {
           setLoading(false);
         }
+      } else {
+        setLoading(false); // Set loading to false if no user
       }
     };
 
-    if (isAuthenticated && user) {
-      fetchBookings();
+    if (!authLoading) {
+      if (isAuthenticated && user) {
+        fetchBookings();
+      } else {
+        setLoading(false); // Not authenticated, stop loading
+      }
     }
-  }, [isAuthenticated, user]);
+  }, [authLoading, isAuthenticated, user]);
 
   const handleLogout = async () => {
     await signOut();

@@ -1,5 +1,5 @@
 // src/services/seoService.js
-import { supabase } from '../config/supabaseClient';
+import { supabase, supabasePublic } from '../config/supabaseClient';
 
 /**
  * SEO Settings Service
@@ -10,10 +10,11 @@ import { supabase } from '../config/supabaseClient';
 // Global SEO Settings
 // ============================================
 
-// Get global SEO settings
+// Get global SEO settings (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getGlobalSEOSettings = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('seo_global_settings')
       .select('*')
       .limit(1)

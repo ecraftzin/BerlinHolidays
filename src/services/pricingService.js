@@ -1,5 +1,5 @@
 // src/services/pricingService.js
-import { supabase } from '../config/supabaseClient';
+import { supabase, supabasePublic } from '../config/supabaseClient';
 
 /**
  * Pricing Plans Service
@@ -23,10 +23,11 @@ export const getAllPricingPlans = async () => {
   }
 };
 
-// Get active pricing plans
+// Get active pricing plans (for public pages)
+// Uses supabasePublic client to avoid auth session issues
 export const getActivePricingPlans = async () => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabasePublic
       .from('pricing_plans')
       .select('*')
       .eq('is_active', true)
