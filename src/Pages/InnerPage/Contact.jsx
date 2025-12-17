@@ -180,7 +180,10 @@ const Contact = () => {
                     Call Us Now
                   </p>
                   <p className="font-Garamond text-lg sm:text-xl md:text-[22px] leading-[26px] text-lightBlack dark:text-white font-medium">
-                    +91 956 2312 019
+                    +91 9061322062
+                  </p>
+                  <p className="font-Garamond text-lg sm:text-xl md:text-[22px] leading-[26px] text-lightBlack dark:text-white font-medium">
+                    +91 9061322063
                   </p>
                 </div>
               </div>
@@ -198,7 +201,7 @@ const Contact = () => {
                     Send Email
                   </p>
                   <p className="font-Garamond text-lg sm:text-xl md:text-[22px] leading-[26px] text-lightBlack dark:text-white font-medium ">
-                    berlinvayanad@gmail.com
+                     info@berlinholidays.in
                   </p>
                 </div>
               </div>

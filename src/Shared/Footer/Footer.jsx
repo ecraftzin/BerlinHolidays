@@ -30,14 +30,21 @@ const Footer = () => {
                         className="text-khaki w-5 h-5 mr-3 2xl:mr-4 "
                         size={14}
                       />
-                      +91 956 2312 019
+                      +91 9061322062
+                    </p>
+                    <p className="flex items-center text-lightGray font-Lora font-normal text-sm sm:text-base leading-[26px] mt-2">
+                      <IoIosCall
+                        className="text-khaki w-5 h-5 mr-3 2xl:mr-4 "
+                        size={14}
+                      />
+                      +91 9061322063
                     </p>
                     <p className="flex items-center text-lightGray font-Lora font-normal text-sm sm:text-base leading-[26px]">
                       <BiEnvelope
                         className="text-khaki w-5 h-5 mr-3 2xl:mr-4 "
                         size={14}
                       />
-                      berlinvayanad@gmail.com
+                       info@berlinholidays.in
                     </p>
                     <p className="flex items-center text-lightGray font-Lora font-normal text-sm sm:text-base leading-[26px]">
                       <IoLocationSharp
