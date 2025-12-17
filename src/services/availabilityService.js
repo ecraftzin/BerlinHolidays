@@ -263,13 +263,13 @@ export const checkAvailabilityForBooking = async (roomTypeId, startDate, endDate
     // Each room type represents a single physical room
     const totalRooms = roomType.total_rooms || 1;
 
-    // Get all overlapping bookings that are admin-confirmed
+    // Get all overlapping bookings that block rooms
     // A booking overlaps if: booking.check_in < endDate AND booking.check_out > startDate
-    // Only confirmed and checked_in bookings reduce room availability (NOT pending)
+    // Bookings are successful immediately - pending, confirmed, and checked_in all block rooms
     const { data: allBookings, error: bookingError } = await supabase
       .from('bookings')
       .select('id, check_in_date, check_out_date, number_of_rooms, room_id, room_ids, status')
-      .in('status', ['confirmed', 'checked_in'])
+      .in('status', ['pending', 'confirmed', 'checked_in'])
       .lt('check_in_date', endDate)
       .gt('check_out_date', startDate);
 
@@ -395,11 +395,11 @@ export const getAvailableRoomTypesForDateRange = async (startDate, endDate, room
     }
 
     // Get ALL overlapping bookings across all room types
-    // Only confirmed and checked_in bookings reduce room availability (NOT pending)
+    // Bookings are successful immediately - pending, confirmed, and checked_in all block rooms
     const { data: allBookings, error: bookingError } = await supabasePublic
       .from('bookings')
       .select('id, check_in_date, check_out_date, number_of_rooms, room_id, room_ids, status')
-      .in('status', ['confirmed', 'checked_in'])
+      .in('status', ['pending', 'confirmed', 'checked_in'])
       .lt('check_in_date', endDate)
       .gt('check_out_date', startDate);
 
@@ -518,11 +518,11 @@ export const getAvailableRoomsForBooking = async (startDate, endDate) => {
     }
 
     // Get ALL overlapping bookings across all room types
-    // Only confirmed and checked_in bookings reduce room availability (NOT pending)
+    // Bookings are successful immediately - pending, confirmed, and checked_in all block rooms
     const { data: allBookings, error: bookingError } = await supabasePublic
       .from('bookings')
       .select('id, check_in_date, check_out_date, number_of_rooms, room_id, room_ids, status')
-      .in('status', ['confirmed', 'checked_in'])
+      .in('status', ['pending', 'confirmed', 'checked_in'])
       .lt('check_in_date', endDate)
       .gt('check_out_date', startDate);
 
