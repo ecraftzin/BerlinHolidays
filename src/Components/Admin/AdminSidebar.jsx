@@ -1,5 +1,5 @@
 // src/Components/Admin/AdminSidebar.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   FaTachometerAlt,
@@ -11,12 +11,10 @@ import {
   FaUtensils,
   FaChevronDown,
   FaChevronRight,
-  FaBars,
   FaTimes,
   FaSignOutAlt,
   FaHotel,
   FaListAlt,
-  FaClipboardList,
   FaQuestionCircle,
   FaCog,
 } from "react-icons/fa";
@@ -46,11 +44,8 @@ const AdminSidebar = ({ isOpen, toggleSidebar, isDarkMode }) => {
       icon: FaTachometerAlt,
       path: "/admin/dashboard",
     },
-    {
-      name: "Bookings",
-      icon: FaClipboardList,
-      path: "/admin/bookings",
-    },
+    // Bookings section removed from UI per client request
+    // Database remains intact for separate booking management software
     {
       name: "Blog Posts",
       icon: FaBlog,

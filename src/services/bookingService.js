@@ -238,6 +238,7 @@ export const createBooking = async (bookingData) => {
         special_requests: bookingData.special_requests || null,
         status: bookingData.status || 'pending',
         total_amount: bookingData.total_amount || null,
+        id_proof_url: bookingData.id_proof_url || null, // ID proof document URL
       }])
       .select()
       .single();

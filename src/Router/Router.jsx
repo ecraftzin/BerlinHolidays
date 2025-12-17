@@ -42,7 +42,8 @@ import MyBookings from "../Pages/MyBookings/MyBookings";
 // Admin Pages
 import AdminLayout from "../Components/Admin/AdminLayout";
 import DashboardOverview from "../Pages/AdminDashboard/DashboardOverview";
-import BookingManagement from "../Pages/AdminDashboard/BookingManagement";
+// BookingManagement import removed - UI only change per client request
+// Database remains intact for separate booking management software
 import BlogManagement from "../Pages/AdminDashboard/BlogManagement";
 import SEOManagement from "../Pages/AdminDashboard/SEOManagement";
 import RoomTypes from "../Pages/AdminDashboard/RoomTypes";
@@ -387,10 +388,8 @@ const router = createBrowserRouter([
         path: "dashboard",
         element: <DashboardOverview />,
       },
-      {
-        path: "bookings",
-        element: <BookingManagement />,
-      },
+      // Bookings route removed from UI per client request
+      // Database remains intact for separate booking management software
       {
         path: "blog",
         element: <BlogManagement />,

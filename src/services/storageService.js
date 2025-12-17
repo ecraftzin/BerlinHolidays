@@ -6,6 +6,62 @@ import { supabase } from '../config/supabaseClient';
  * Handles all file upload operations to Supabase Storage
  */
 
+// Upload ID Proof document to Supabase Storage
+export const uploadIdProof = async (file) => {
+  try {
+    // Validate file
+    if (!file) {
+      throw new Error('No file provided');
+    }
+
+    // Validate file type - allow images and PDFs for ID proofs
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      throw new Error('Invalid file type. Please upload a JPEG, PNG, WebP image or PDF document.');
+    }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      throw new Error('File size too large. Maximum size is 5MB.');
+    }
+
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${timestamp}-${randomString}.${fileExt}`;
+    const filePath = `id-proofs/${fileName}`;
+
+    // Upload file to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('booking-documents')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) throw error;
+
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from('booking-documents')
+      .getPublicUrl(filePath);
+
+    return {
+      data: {
+        path: data.path,
+        publicUrl: publicUrl,
+        fileName: fileName,
+      },
+      error: null,
+    };
+  } catch (error) {
+    console.error('Error uploading ID proof:', error);
+    return { data: null, error };
+  }
+};
+
 // Upload image to Supabase Storage
 export const uploadImage = async (file, bucket = 'blog-images', folder = '') => {
   try {
@@ -239,6 +295,7 @@ export const createImagePreview = (file) => {
 };
 
 export default {
+  uploadIdProof,
   uploadImage,
   uploadMultipleImages,
   deleteImage,

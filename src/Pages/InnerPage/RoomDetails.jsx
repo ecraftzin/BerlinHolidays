@@ -7,6 +7,7 @@ import Swal from "sweetalert2";
 import { getRoomTypeBySlug } from "../../services/roomService";
 import { createBooking } from "../../services/bookingService";
 import { checkAvailabilityForBooking } from "../../services/availabilityService";
+import { uploadIdProof } from "../../services/storageService";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useAuth } from "../../Context/AuthContext";
@@ -237,6 +238,35 @@ const RoomDetails = () => {
                    focus:ring-1 focus:ring-[#c49e72]/50 resize-none"
           ></textarea>
         </div>
+
+        <!-- ID Proof Upload -->
+        <div>
+          <label class="block mb-1 text-xs font-semibold text-gray-500">
+            ID Proof (Booked User) <span class="text-red-500">*</span>
+          </label>
+
+          <!-- ID Proof Message -->
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-2">
+            <p class="text-[11px] text-amber-800">
+              <strong>Note:</strong> Only the booked user's ID proof is required during online booking.
+              ID proofs of other adults and children must be shown directly to resort management at check-in.
+            </p>
+          </div>
+
+          <input
+            id="swal-idproof"
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+            class="w-full px-4 py-3 border-2 border-[#e8e8e8] rounded-lg
+                   bg-[#f7f5f2] text-[13px] text-[#1f2933]
+                   focus:outline-none focus:border-[#c49e72]
+                   focus:ring-1 focus:ring-[#c49e72]/50
+                   file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                   file:text-sm file:font-semibold file:bg-[#006938] file:text-white
+                   hover:file:bg-[#004d27] cursor-pointer"
+          />
+          <p class="text-[10px] text-gray-400 mt-1">JPEG, PNG, WebP or PDF (Max 5MB)</p>
+        </div>
       </div>
     `,
     focusConfirm: false,
@@ -267,19 +297,39 @@ const RoomDetails = () => {
       const email = document.getElementById("swal-email").value.trim();
       const phone = document.getElementById("swal-phone").value.trim();
       const requests = document.getElementById("swal-requests").value.trim();
+      const idProofInput = document.getElementById("swal-idproof");
+      const idProofFile = idProofInput.files[0];
 
       if (!name || !email) {
         Swal.showValidationMessage("Please enter your name and email");
         return false;
       }
 
-      const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         Swal.showValidationMessage("Please enter a valid email address");
         return false;
       }
 
-      return { name, email, phone, requests };
+      if (!idProofFile) {
+        Swal.showValidationMessage("Please upload your ID proof");
+        return false;
+      }
+
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+      if (!validTypes.includes(idProofFile.type)) {
+        Swal.showValidationMessage("Invalid file type. Please upload JPEG, PNG, WebP or PDF");
+        return false;
+      }
+
+      // Validate file size (5MB max)
+      if (idProofFile.size > 5 * 1024 * 1024) {
+        Swal.showValidationMessage("File too large. Maximum size is 5MB");
+        return false;
+      }
+
+      return { name, email, phone, requests, idProofFile };
     },
   });
 
@@ -333,6 +383,34 @@ const RoomDetails = () => {
     });
 
     if (result.isConfirmed) {
+      // Show uploading indicator
+      Swal.fire({
+        title: 'Processing...',
+        html: 'Uploading your ID proof and creating booking...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      // Upload ID proof first
+      let idProofUrl = null;
+      try {
+        const uploadResult = await uploadIdProof(formValues.idProofFile);
+        if (uploadResult.error) {
+          throw uploadResult.error;
+        }
+        idProofUrl = uploadResult.data.publicUrl;
+      } catch (error) {
+        Swal.fire({
+          title: "Upload Failed",
+          text: "Failed to upload ID proof. Please try again.",
+          icon: "error",
+          confirmButtonColor: "#006938",
+        });
+        return;
+      }
+
       // Save booking to database
       const bookingData = {
         user_id: user?.id || null, // Link booking to logged-in user
@@ -348,6 +426,7 @@ const RoomDetails = () => {
         number_of_children: children,
         special_requests: formValues.requests || null,
         status: "pending",
+        id_proof_url: idProofUrl, // ID proof document URL
       };
 
       const saveResult = await createBooking(bookingData);

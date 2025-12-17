@@ -1,10 +1,11 @@
 // src/Components/BookingForm/BookingModal.jsx
 import { useState, useEffect, useCallback } from "react";
-import { FaCalendarAlt, FaBed, FaUsers, FaChild, FaUserFriends, FaTimes, FaUser, FaEnvelope, FaPhone } from "react-icons/fa";
+import { FaCalendarAlt, FaBed, FaUsers, FaChild, FaUserFriends, FaTimes, FaUser, FaEnvelope, FaPhone, FaIdCard, FaUpload } from "react-icons/fa";
 import { BiChevronDown } from "react-icons/bi";
 import Swal from "sweetalert2";
 import { createBooking } from "../../services/bookingService";
 import { getAvailableRoomsForBooking } from "../../services/availabilityService";
+import { uploadIdProof } from "../../services/storageService";
 import { useAuth } from "../../Context/AuthContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -40,6 +41,11 @@ const BookingModal = ({ isOpen, onClose }) => {
   // Available rooms for selected dates
   const [availableRooms, setAvailableRooms] = useState([]);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
+
+  // ID Proof upload state
+  const [idProofFile, setIdProofFile] = useState(null);
+  const [idProofPreview, setIdProofPreview] = useState(null);
+  const [uploadingIdProof, setUploadingIdProof] = useState(false);
 
   // Fetch available rooms when dates change
   const fetchAvailableRooms = useCallback(async () => {
@@ -152,6 +158,49 @@ const BookingModal = ({ isOpen, onClose }) => {
     }));
   };
 
+  // Handle ID Proof file selection
+  const handleIdProofChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+      if (!validTypes.includes(file.type)) {
+        Swal.fire({
+          title: "Invalid File Type",
+          text: "Please upload a JPEG, PNG, WebP image or PDF document.",
+          icon: "error",
+          confirmButtonColor: "#006938",
+        });
+        return;
+      }
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          title: "File Too Large",
+          text: "Maximum file size is 5MB.",
+          icon: "error",
+          confirmButtonColor: "#006938",
+        });
+        return;
+      }
+      setIdProofFile(file);
+      // Create preview for images
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => setIdProofPreview(e.target.result);
+        reader.readAsDataURL(file);
+      } else {
+        setIdProofPreview(null); // PDF files don't have preview
+      }
+    }
+  };
+
+  // Remove selected ID proof
+  const handleRemoveIdProof = () => {
+    setIdProofFile(null);
+    setIdProofPreview(null);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -225,6 +274,17 @@ const BookingModal = ({ isOpen, onClose }) => {
       return;
     }
 
+    // Validate ID proof is uploaded
+    if (!idProofFile) {
+      Swal.fire({
+        title: "ID Proof Required",
+        text: "Please upload your ID proof to continue with the booking.",
+        icon: "error",
+        confirmButtonColor: "#006938",
+      });
+      return;
+    }
+
     const totalGuests = formData.adults + formData.children;
 
     // Get all selected room details
@@ -236,6 +296,28 @@ const BookingModal = ({ isOpen, onClose }) => {
     // Create room_ids as JSON array and room_names as comma-separated string
     const roomIds = JSON.stringify(formData.selectedRooms);
     const roomNames = selectedRoomDetails.map(r => r.name).join(', ');
+
+    // Upload ID proof first
+    setUploadingIdProof(true);
+    let idProofUrl = null;
+
+    try {
+      const uploadResult = await uploadIdProof(idProofFile);
+      if (uploadResult.error) {
+        throw uploadResult.error;
+      }
+      idProofUrl = uploadResult.data.publicUrl;
+    } catch (error) {
+      setUploadingIdProof(false);
+      Swal.fire({
+        title: "Upload Failed",
+        text: "Failed to upload ID proof. Please try again.",
+        icon: "error",
+        confirmButtonColor: "#006938",
+      });
+      return;
+    }
+    setUploadingIdProof(false);
 
     // Create ONE booking with all selected rooms
     const bookingData = {
@@ -254,6 +336,7 @@ const BookingModal = ({ isOpen, onClose }) => {
       total_guests: totalGuests,
       special_requests: contactData.specialRequests || null,
       status: "pending",
+      id_proof_url: idProofUrl, // ID proof document URL
     };
 
     const saveResult = await createBooking(bookingData);
@@ -281,6 +364,8 @@ const BookingModal = ({ isOpen, onClose }) => {
         phone: "",
         specialRequests: "",
       });
+      setIdProofFile(null);
+      setIdProofPreview(null);
       setAvailableRooms([]);
       onClose();
     } else {
@@ -640,6 +725,67 @@ const BookingModal = ({ isOpen, onClose }) => {
         placeholder="Any special requests or requirements?"
       ></textarea>
     </div>
+
+    {/* ID Proof Upload */}
+    <div className="md:col-span-2">
+      <label className="block text-lightBlack dark:text-white font-semibold font-Garamond text-sm mb-2">
+        <FaIdCard className="inline mr-2 text-[#006938]" />
+        ID Proof (Booked User) <span className="text-red-500">*</span>
+      </label>
+
+      {/* ID Proof Message */}
+      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3 mb-3">
+        <p className="text-xs text-amber-800 dark:text-amber-200 font-Lora">
+          <strong>Note:</strong> Only the booked user's ID proof is required during online booking.
+          ID proofs of other adults and children must be shown directly to resort management at check-in.
+        </p>
+      </div>
+
+      {!idProofFile ? (
+        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#c49e72] dark:border-gray-600 rounded-lg cursor-pointer bg-[#f7f5f2] dark:bg-gray-800 hover:bg-[#f0ebe4] dark:hover:bg-gray-700 transition-all duration-300">
+          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <FaUpload className="w-8 h-8 mb-2 text-[#c49e72]" />
+            <p className="mb-1 text-sm text-gray-500 dark:text-gray-400 font-Lora">
+              <span className="font-semibold">Click to upload</span> your ID proof
+            </p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 font-Lora">
+              JPEG, PNG, WebP or PDF (Max 5MB)
+            </p>
+          </div>
+          <input
+            type="file"
+            className="hidden"
+            accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+            onChange={handleIdProofChange}
+          />
+        </label>
+      ) : (
+        <div className="flex items-center justify-between p-3 border-2 border-[#006938] dark:border-[#006938] rounded-lg bg-green-50 dark:bg-green-900/20">
+          <div className="flex items-center">
+            {idProofPreview ? (
+              <img src={idProofPreview} alt="ID Preview" className="w-12 h-12 object-cover rounded mr-3" />
+            ) : (
+              <div className="w-12 h-12 bg-[#006938] rounded flex items-center justify-center mr-3">
+                <FaIdCard className="text-white text-xl" />
+              </div>
+            )}
+            <div>
+              <p className="text-sm font-semibold text-lightBlack dark:text-white font-Lora">{idProofFile.name}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-Lora">
+                {(idProofFile.size / 1024 / 1024).toFixed(2)} MB
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleRemoveIdProof}
+            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all"
+          >
+            <FaTimes />
+          </button>
+        </div>
+      )}
+    </div>
   </div>
 </div>
 
@@ -803,15 +949,17 @@ const BookingModal = ({ isOpen, onClose }) => {
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={() => setShowContactForm(false)}
-                  className="flex-1 px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold font-Garamond rounded-lg transition-all duration-300"
+                  disabled={uploadingIdProof}
+                  className="flex-1 px-6 py-3 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold font-Garamond rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleFinalSubmit}
-                  className="flex-1 px-6 py-3 bg-[#006938] hover:bg-[#004d27] text-white font-bold font-Garamond rounded-lg transition-all duration-300"
+                  disabled={uploadingIdProof}
+                  className="flex-1 px-6 py-3 bg-[#006938] hover:bg-[#004d27] text-white font-bold font-Garamond rounded-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Submit Booking
+                  {uploadingIdProof ? 'Uploading ID...' : 'Submit Booking'}
                 </button>
               </div>
             </div>
