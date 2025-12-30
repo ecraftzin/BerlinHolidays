@@ -203,6 +203,9 @@ const Contact = () => {
                   <p className="font-Garamond text-lg sm:text-xl md:text-[22px] leading-[26px] text-lightBlack dark:text-white font-medium ">
                      info@berlinholidays.in
                   </p>
+                  <p className="font-Garamond text-lg sm:text-xl md:text-[22px] leading-[26px] text-lightBlack dark:text-white font-medium ">
+                     booking@berlinholidays.in
+                  </p>
                 </div>
               </div>
               <hr className="dark:text-gray dark:bg-gray text-lightGray bg-lightGray h-[1px]" />

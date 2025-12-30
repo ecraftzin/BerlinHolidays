@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import { createBooking } from "../../services/bookingService";
 import { getAvailableRoomsForBooking } from "../../services/availabilityService";
 import { useAuth } from "../../Context/AuthContext";
+import PriceSummary from "./PriceSummary";
 
 const BookingForm = () => {
   const { user } = useAuth();
@@ -257,6 +258,12 @@ const BookingForm = () => {
 
       for (const roomId of formData.selectedRooms) {
         const room = availableRooms.find(r => r.id === roomId);
+        // Calculate total amount for this room
+        const roomPrice = parseFloat(room?.base_price) || 0;
+        const subtotal = roomPrice * nights;
+        const gstAmount = Math.round(subtotal * 0.12); // 12% GST
+        const totalAmount = subtotal + gstAmount;
+
         const bookingData = {
           user_id: user?.id || null,
           customer_name: contactData.name,
@@ -272,6 +279,11 @@ const BookingForm = () => {
           total_guests: totalGuests,
           special_requests: contactData.specialRequests || null,
           status: "pending",
+          room_price: roomPrice,
+          number_of_nights: nights,
+          gst_amount: gstAmount,
+          total_amount: totalAmount,
+          total_amount_with_gst: totalAmount,
         };
 
         const saveResult = await createBooking(bookingData);
@@ -614,6 +626,19 @@ const BookingForm = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* Price Summary - Real-time calculation */}
+                {formData.selectedRooms.length > 0 && formData.checkInDate && formData.checkOutDate && (
+                  <div className="mt-6">
+                    <PriceSummary
+                      selectedRooms={availableRooms.filter(room => formData.selectedRooms.includes(room.id))}
+                      checkInDate={formData.checkInDate}
+                      checkOutDate={formData.checkOutDate}
+                      showTaxes={true}
+                      variant="detailed"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Book Now Button */}
@@ -713,6 +738,17 @@ const BookingForm = () => {
                     placeholder="Any special requests or requirements?"
                   ></textarea>
                 </div>
+              </div>
+
+              {/* Price Summary */}
+              <div className="mt-4">
+                <PriceSummary
+                  selectedRooms={availableRooms.filter(room => formData.selectedRooms.includes(room.id))}
+                  checkInDate={formData.checkInDate}
+                  checkOutDate={formData.checkOutDate}
+                  showTaxes={true}
+                  variant="detailed"
+                />
               </div>
 
               <div className="flex gap-3 mt-6">

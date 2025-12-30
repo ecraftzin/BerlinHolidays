@@ -156,7 +156,7 @@ const LoginPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="admin@berlinholidays.com"
+                  placeholder="Enter your email"
                   className="w-full pl-12 pr-4 py-4 bg-whiteSmoke dark:bg-normalBlack border-2 border-transparent focus:border-khaki rounded-lg text-lightBlack dark:text-white placeholder-gray dark:placeholder-lightGray transition-all duration-300 outline-none font-Lora"
                 />
               </div>

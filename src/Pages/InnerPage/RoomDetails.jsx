@@ -11,6 +11,7 @@ import { uploadIdProof } from "../../services/storageService";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useAuth } from "../../Context/AuthContext";
+import PriceSummary from "../../Components/BookingForm/PriceSummary";
 
 // Helper function to format date in local timezone (YYYY-MM-DD)
 const formatLocalDate = (date) => {
@@ -411,6 +412,16 @@ const RoomDetails = () => {
         return;
       }
 
+      // Calculate total amount
+      const nights = Math.ceil(
+        (new Date(checkOutDate) - new Date(checkInDate)) /
+          (1000 * 60 * 60 * 24)
+      );
+      const roomPrice = parseFloat(roomData?.base_price) || 0;
+      const subtotal = roomPrice * nights * rooms;
+      const gstAmount = Math.round(subtotal * 0.12); // 12% GST
+      const totalAmount = subtotal + gstAmount;
+
       // Save booking to database
       const bookingData = {
         user_id: user?.id || null, // Link booking to logged-in user
@@ -427,6 +438,11 @@ const RoomDetails = () => {
         special_requests: formValues.requests || null,
         status: "pending",
         id_proof_url: idProofUrl, // ID proof document URL
+        room_price: roomPrice,
+        number_of_nights: nights,
+        gst_amount: gstAmount,
+        total_amount: totalAmount,
+        total_amount_with_gst: totalAmount,
       };
 
       const saveResult = await createBooking(bookingData);
@@ -871,19 +887,39 @@ const RoomDetails = () => {
               </div>
             </div>
 
-            {/* Price Display */}
+            {/* Price Display with Real-time Calculation */}
             <div
-              className="mt-3 sm:mt-4 md:mt-5 lg:mt-6 bg-whiteSmoke dark:bg-normalBlack px-7 py-8  border border-[#006938] rounded-md"
+              className="mt-3 sm:mt-4 md:mt-5 lg:mt-6"
               data-aos="zoom-in-up"
               data-aos-duration="1000"
             >
-              <h4 className="font-Garamond text-xl sm:text-[22px] md:text-2xl xl:text-3xl leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold mb-4">
-                Price
-              </h4>
-              <div className="flex items-center justify-between">
-                <span className="text-sm lg:text-base text-gray dark:text-lightGray font-Lora">Per Night</span>
-                <span className="text-2xl font-Garamond text-[#006938] font-semibold">₹{roomData.base_price}</span>
-              </div>
+              {/* Show PriceSummary if dates are selected */}
+              {bookingFormData.checkInDate && bookingFormData.checkOutDate ? (
+                <PriceSummary
+                  selectedRooms={[{
+                    id: roomData.id,
+                    name: roomData.name,
+                    base_price: roomData.base_price
+                  }]}
+                  checkInDate={bookingFormData.checkInDate}
+                  checkOutDate={bookingFormData.checkOutDate}
+                  showTaxes={true}
+                  variant="detailed"
+                />
+              ) : (
+                <div className="bg-whiteSmoke dark:bg-normalBlack px-7 py-8 border border-[#006938] rounded-md">
+                  <h4 className="font-Garamond text-xl sm:text-[22px] md:text-2xl xl:text-3xl leading-7 md:leading-8 lg:leading-10 text-lightBlack dark:text-white font-semibold mb-4">
+                    Price
+                  </h4>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm lg:text-base text-gray dark:text-lightGray font-Lora">Per Night</span>
+                    <span className="text-2xl font-Garamond text-[#006938] font-semibold">₹{roomData.base_price}</span>
+                  </div>
+                  <p className="text-xs text-gray dark:text-lightGray mt-3 font-Lora italic">
+                    Select check-in and check-out dates to see total price
+                  </p>
+                </div>
+              )}
             </div>
             {/* Amenities */}
             <div

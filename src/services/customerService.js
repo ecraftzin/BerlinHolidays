@@ -89,14 +89,38 @@ export const getCustomerBookings = async (userId, userEmail = null) => {
     // If we have an email, search by both user_id OR customer_email
     // This ensures older bookings (before user_id was added) still show up
     if (userEmail) {
-      const { data, error } = await supabase
+      // Use two separate queries and combine results to avoid filter syntax issues
+      // Query 1: Get bookings by user_id
+      const { data: userIdBookings, error: error1 } = await supabase
         .from("bookings")
         .select("*")
-        .or(`user_id.eq.${userId},customer_email.ilike.${userEmail}`)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return { data, error: null };
+      if (error1) throw error1;
+
+      // Query 2: Get bookings by customer_email (case-insensitive)
+      const { data: emailBookings, error: error2 } = await supabase
+        .from("bookings")
+        .select("*")
+        .ilike("customer_email", userEmail)
+        .order("created_at", { ascending: false });
+
+      if (error2) throw error2;
+
+      // Combine and deduplicate results by booking ID
+      const allBookings = [...(userIdBookings || []), ...(emailBookings || [])];
+      const uniqueBookings = allBookings.reduce((acc, booking) => {
+        if (!acc.find(b => b.id === booking.id)) {
+          acc.push(booking);
+        }
+        return acc;
+      }, []);
+
+      // Sort by created_at descending
+      uniqueBookings.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      return { data: uniqueBookings, error: null };
     } else {
       // Fallback to just user_id if no email provided
       const { data, error } = await supabase

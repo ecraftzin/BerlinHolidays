@@ -238,7 +238,11 @@ export const createBooking = async (bookingData) => {
         number_of_children: bookingData.number_of_children || 0,
         special_requests: bookingData.special_requests || null,
         status: bookingData.status || 'pending',
+        room_price: bookingData.room_price || null,
+        number_of_nights: bookingData.number_of_nights || 1,
+        gst_amount: bookingData.gst_amount || 0,
         total_amount: bookingData.total_amount || null,
+        total_amount_with_gst: bookingData.total_amount_with_gst || bookingData.total_amount || null,
         id_proof_url: bookingData.id_proof_url || null, // ID proof document URL
       }])
       .select()

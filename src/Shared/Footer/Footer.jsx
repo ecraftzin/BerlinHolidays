@@ -47,6 +47,13 @@ const Footer = () => {
                        info@berlinholidays.in
                     </p>
                     <p className="flex items-center text-lightGray font-Lora font-normal text-sm sm:text-base leading-[26px]">
+                      <BiEnvelope
+                        className="text-khaki w-5 h-5 mr-3 2xl:mr-4 "
+                        size={14}
+                      />
+                       booking@berlinholidays.in
+                    </p>
+                    <p className="flex items-center text-lightGray font-Lora font-normal text-sm sm:text-base leading-[26px]">
                       <IoLocationSharp
                         className="text-khaki w-5 h-5 mr-3 2xl:mr-4 "
                         size={14}

@@ -9,6 +9,7 @@ import { uploadIdProof } from "../../services/storageService";
 import { useAuth } from "../../Context/AuthContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import PriceSummary from "./PriceSummary";
 
 
 // Helper function to format date in local timezone (YYYY-MM-DD)
@@ -287,11 +288,25 @@ const BookingModal = ({ isOpen, onClose }) => {
 
     const totalGuests = formData.adults + formData.children;
 
+    // Calculate number of nights
+    const nights = Math.ceil(
+      (new Date(formData.checkOutDate) - new Date(formData.checkInDate)) /
+        (1000 * 60 * 60 * 24)
+    );
+
     // Get all selected room details
     const selectedRoomDetails = formData.selectedRooms.map(roomId => {
       const room = availableRooms.find(r => r.id === roomId);
       return room;
     }).filter(Boolean);
+
+    // Calculate total price for all selected rooms
+    const totalPricePerNight = selectedRoomDetails.reduce((sum, room) => {
+      return sum + (parseFloat(room.base_price) || 0);
+    }, 0);
+    const subtotal = totalPricePerNight * nights;
+    const gstAmount = Math.round(subtotal * 0.12); // 12% GST
+    const totalAmount = subtotal + gstAmount;
 
     // Create room_ids as JSON array and room_names as comma-separated string
     const roomIds = JSON.stringify(formData.selectedRooms);
@@ -337,6 +352,11 @@ const BookingModal = ({ isOpen, onClose }) => {
       special_requests: contactData.specialRequests || null,
       status: "pending",
       id_proof_url: idProofUrl, // ID proof document URL
+      room_price: totalPricePerNight,
+      number_of_nights: nights,
+      gst_amount: gstAmount,
+      total_amount: totalAmount,
+      total_amount_with_gst: totalAmount,
     };
 
     const saveResult = await createBooking(bookingData);
@@ -833,6 +853,19 @@ const BookingModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
+          {/* Price Summary - Real-time calculation */}
+          {formData.selectedRooms.length > 0 && formData.checkInDate && formData.checkOutDate && (
+            <div className="mb-6">
+              <PriceSummary
+                selectedRooms={availableRooms.filter(room => formData.selectedRooms.includes(room.id))}
+                checkInDate={formData.checkInDate}
+                checkOutDate={formData.checkOutDate}
+                showTaxes={true}
+                variant="detailed"
+              />
+            </div>
+          )}
+
           {/* Checking Availability Indicator */}
           {checkingAvailability && (
             <div className="py-2 text-center mb-4">
@@ -944,6 +977,17 @@ const BookingModal = ({ isOpen, onClose }) => {
                     placeholder="Any special requests or requirements?"
                   ></textarea>
                 </div>
+              </div>
+
+              {/* Price Summary in Contact Modal */}
+              <div className="mt-4">
+                <PriceSummary
+                  selectedRooms={availableRooms.filter(room => formData.selectedRooms.includes(room.id))}
+                  checkInDate={formData.checkInDate}
+                  checkOutDate={formData.checkOutDate}
+                  showTaxes={true}
+                  variant="compact"
+                />
               </div>
 
               <div className="flex gap-3 mt-6">
