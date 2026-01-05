@@ -129,7 +129,7 @@ const About = () => {
               data-aos-duration="1000"
             >
               <TiltImage
-                src="/images/inner/about_thumb.png"
+                src="/images/inner/about_thumb.jpeg"
                 alt="About - Berlin Holidays"
               />
             </div>

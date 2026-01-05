@@ -27,7 +27,7 @@ const Testimonial = () => {
   });
 
   return (
-    <section className="bg-[url('/images/home-1/tesimonialbg.png')] bg-[rgba(30,30,30,0.4)] dark:bg-[rgba(30,30,30,0.6)] bg-opacity-40 grid items-center justify-center bg-no-repeat bg-cover">
+    <section className="bg-[url('/images/home-1/tesimonialbg.jpeg')] bg-[rgba(30,30,30,0.4)] dark:bg-[rgba(30,30,30,0.6)] bg-opacity-40 grid items-center justify-center bg-no-repeat bg-cover">
       <div className="Container py-20 lg:py-[120px]">
         {/* section title */}
         <div

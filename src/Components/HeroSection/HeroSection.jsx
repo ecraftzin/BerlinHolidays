@@ -28,7 +28,7 @@ const HeroSection = () => {
         <SwiperSlide>
           <div className="relative w-full h-[700px] md:h-[800px] xl:h-[850px] 3xl:h-[950px] overflow-hidden">
             <video
-              src="/bannervideo/berlinbannervideo.mp4" // Local path to the video
+              src="/bannervideo/MainBannerVideo.mp4" // Local path to the video
               autoPlay
               muted
               loop
