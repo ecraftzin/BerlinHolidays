@@ -147,20 +147,12 @@ const About = () => {
                 ESCAPE. INDULGE. EXPERIENCE
               </h1>
               <p className="text-sm xl:text-base md:text-sm lg:text-base font-Lora text-gray dark:text-lightGray font-normal leading-[26px]">
-                Discover the art of relaxation at Berlin Holidays,
-                where every stay is designed to redefine comfort and
-                luxury. Nestled amidst serene landscapes, our resort
-                combines modern elegance with warm hospitality — offering
-                the perfect destination for families, couples, and solo
-                travelers alike.
+               Escape to Berlin Holidays, where nature meets luxury.
+                Nestled amidst waterfalls and greenery, we offer private villas, 
+                family adventures, romantic getaways, and unique experiences.
+                 Every stay is thoughtfully designed for comfort, tranquility,
+                  and lasting memories.
               </p>
-
-              <p className="text-sm sm:text-base font-Lora text-gray dark:text-lightGray font-normal leading-[26px] mt-5">
-                From world-class accommodations and fine dining to
-                rejuvenating spa treatments and adventure experiences,
-                every moment here is curated to inspire and delight.
-              </p>
-
               <div className="bg-whiteSmoke dark:bg-lightBlack px-[30px] py-5">
                 <p className="text-sm sm:text-base leading-10 3xl:leading-[50px] text-lightBlack dark:text-white font-medium font-Lora ">
                   Berlin Holidays Resort Wayanad

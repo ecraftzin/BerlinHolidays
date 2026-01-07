@@ -60,7 +60,7 @@ const Footer = () => {
                       />
                      Berlin Holidays <br />
                      Vaithiri-Pozhuthana Road - Parathode(Near Banasura Dam)-Wayanad,
-                     Thariyod (Po) <br />
+                     Thariyod (Po) <br/>
                      Kerala - 673575
                     </p>
                   </div>

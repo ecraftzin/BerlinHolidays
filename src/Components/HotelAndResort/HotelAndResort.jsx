@@ -86,13 +86,12 @@ const HotelAndResort = () => {
               YOUR GATEWAY TO LUXURY GETAWAYS
             </h5>
             <h1 className="text-[22px] sm:text-2xl md:text-[21px] xl:text-3xl 2xl:text-[38px] leading-6 md:leading-7 lg:leading-[30px] 2xl:leading-[44px] text-lightBlack dark:text-white font-semibold my-4">
-              EXPERIENCE THE ART OF TRAVEL
+              More Than a Stay, It’s an Experience
             </h1>
             <p className="text-sm xl:text-base md:text-sm lg:text-base font-Lora text-gray dark:text-lightGray font-normal leading-[26px]">
-              We blend comfort, exclusivity, and authenticity—helping you explore
-              the world with ease. Enjoy seamless direct bookings, exclusive holiday
-              packages, and a design that reflects the sophistication and warmth
-              of your journey.
+            Relax in luxury surrounded by nature. Enjoy serene villas, 
+            fresh air, scenic views, and carefully crafted experiences 
+            designed for true rest and connection.
             </p>
             <div className="flex items-center mt-4 md:mt-3 lg:mt-4">
               <div>
