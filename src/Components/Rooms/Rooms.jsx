@@ -273,7 +273,7 @@ const Rooms = () => {
                           </div>
                           <div className="font-Garamond">
                             <div className="px-5 3xl:px-6 py-2 inline-flex bg-khaki text-sm  items-center justify-center text-white  absolute top-[10px] right-[10px] font-Lora font-normal leading-[26px]">
-                              <span className="">${roomData.base_price || 0}</span>
+                              <span className="">₹{roomData.base_price || 0}</span>
                               <span className="mx-2">|</span>
                               <span>Night</span>
                             </div>
