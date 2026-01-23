@@ -31,28 +31,30 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   // Handle booking button click - requires authentication
-  const handleBookingClick = () => {
-    if (isAuthenticated) {
-      openBookingModal();
-      setIsOpen(false); // close mobile menu if open
-    } else {
-      Swal.fire({
-        title: "Login Required",
-        text: "Please log in to book a room",
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonColor: "#006938",
-        cancelButtonColor: "#c49e72",
-        confirmButtonText: "Login",
-        cancelButtonText: "Cancel",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          navigate("/login");
-        }
-      });
-      setIsOpen(false);
-    }
-  };
+const handleBookingClick = () => {
+  // Open the booking modal directly for everyone
+  openBookingModal();
+  setIsOpen(false); // Close mobile menu if open
+
+  // If the user is not logged in, prompt them to log in (optional)
+  if (!isAuthenticated) {
+    Swal.fire({
+      title: "You are not logged in",
+      text: "You can proceed without logging in, or login to access additional features.",
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonColor: "#006938",
+      cancelButtonColor: "#c49e72",
+      confirmButtonText: "Login",
+      cancelButtonText: "Proceed without Login",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate("/login");
+      }
+    });
+  }
+};
+
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);
@@ -348,7 +350,13 @@ const Navbar = () => {
               Booking Online
             </button>
             <div className="ml-3">
-              <UserProfileDropdown size={35} />
+              {isAuthenticated ? (
+  <UserProfileDropdown size={20} />
+) : (
+  <Link to="/login" className="text-white">
+    Login
+  </Link>
+)}
             </div>
           </div>
         </div>

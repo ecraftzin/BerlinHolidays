@@ -152,24 +152,23 @@ const RoomDetails = () => {
       return;
     }
 
-    // Check if user is authenticated
-    if (!isAuthenticated) {
-      const result = await Swal.fire({
-        title: "Login Required",
-        text: "Please log in to book a room",
-        icon: "info",
-        showCancelButton: true,
-        confirmButtonColor: "#006938",
-        cancelButtonColor: "#c49e72",
-        confirmButtonText: "Login",
-        cancelButtonText: "Cancel",
-      });
+     // If the user is not authenticated, show login prompt but allow booking to proceed without login
+  if (!isAuthenticated) {
+    const result = await Swal.fire({
+      title: "You are not logged in",
+      text: "You can book a room without logging in. However, logging in will allow you to track your booking and access more features.",
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonColor: "#006938",
+      cancelButtonColor: "#c49e72",
+      confirmButtonText: "Login",
+      cancelButtonText: "Proceed without Login",
+    });
 
-      if (result.isConfirmed) {
-        navigate("/login");
-      }
-      return;
+    if (result.isConfirmed) {
+      navigate("/login");
     }
+  }
 
     // First, collect contact information
      const { value: formValues } = await Swal.fire({
