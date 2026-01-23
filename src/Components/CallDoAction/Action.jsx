@@ -26,8 +26,10 @@ const Action = () => {
           </div>
 
           {/* RIGHT AUTOPLAY VIDEO */}
-          <div className="relative w-full h-full bg-black overflow-hidden">
-
+          <div className="relative w-full h-[75vh] lg:h-screen bg-black overflow-hidden">
+            {/* Video Container with optional gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-50"></div>
+            
             <video
               className="w-full h-full object-cover"
               muted
@@ -41,7 +43,6 @@ const Action = () => {
                 type="video/mp4"
               />
             </video>
-
           </div>
         </div>
       </section>
