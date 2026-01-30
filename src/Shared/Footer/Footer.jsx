@@ -2,7 +2,7 @@ import { IoIosCall } from "react-icons/io";
 import { IoLocationSharp } from "react-icons/io5";
 import Brand from "../../Components/Brand/Brand";
 import { BiEnvelope, BiLogoLinkedin } from "react-icons/bi";
-import { FaFacebookF, FaPinterestP, FaTwitter } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaYoutube} from "react-icons/fa";
 import { Link } from "react-router-dom";
 const Footer = () => {
   return (
@@ -72,22 +72,16 @@ const Footer = () => {
                         <FaFacebookF className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
                       </Link>
                     </li>
-
-                    <li className="hover-animBg group transition-all duration-300  rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
-                      <Link to="#">
-                        <FaTwitter className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
-                      </Link>
-                    </li>
-                    <li className="hover-animBg group transition-all duration-300  rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
-                      <Link to="#">
-                        <BiLogoLinkedin className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
-                      </Link>
-                    </li>
-                    <li className="hover-animBg group transition-all duration-300  rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
-                      <Link to="#">
-                        <FaPinterestP className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
-                      </Link>
-                    </li>
+                    <li className="hover-animBg group transition-all duration-300 rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
+                      <Link to="#" className="">
+                       <FaInstagram className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
+                         </Link>
+                     </li>
+                     <li className="hover-animBg group transition-all duration-300 rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
+                      <Link to="#" className="">
+                       <FaYoutube className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
+                         </Link>
+                     </li>
                   </ul>
                 </div>
               </div>

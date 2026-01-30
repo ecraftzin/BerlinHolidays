@@ -184,19 +184,8 @@ const About = () => {
                   className="h-full w-full md:h-[80%] lg:h-full object-cover"
                   alt=""
                 />
-
-                <div
-                  className="w-[70px] h-[70px]  text-white absolute top-1/2 md:top-[35%] lg:top-1/2 left-[45%] bg-khaki rounded-full flex items-center justify-center cursor-pointer z-[1] "
-                  onClick={() => setToggler(!toggler)}
-                >
-                  <BsPlay className="w-8 h-8" />
-                </div>
-                <span className=" top-[47%] md:top-[33%] lg:top-[48%] left-[42%] lg:left-[43.5%] border w-[90px] h-[90px] rounded-full absolute border-white video-animation"></span>
               </div>
-              <FsLightbox
-                toggler={toggler}
-                sources={["https://youtu.be/fFDyoI73viQ?si=GbDzAagjoa_0Nv2x"]}
-              />
+              
             </div>
             <div
               className="bg-[#f8f6f3] dark:bg-normalBlack space-y-5 flex-1 font-Garamond px-5 sm:px-7 md:px-9 lg:pl-[70px] py-10 md:py-[96px] lg:pr-[70px]"
