@@ -219,38 +219,17 @@ const handleBookingClick = () => {
             >
               About
             </NavLink>
-            <div className="text-lightBlack lg:text-white dark:text-white lg:border-b-0 px-3 py-2 w-full block transition-all duration-300 group relative">
-              <button className="flex items-center w-full lg:w-auto">
-               ROOMS
-                <BiChevronDown className="ml-1" />
-              </button>
-              <div className="absolute pt-5 lg:pt-8 z-20">
-                <ul className="shadow-2xl hidden group-hover:block rounded-sm bg-white text-black w-[200px] text-left dark:bg-normalBlack dark:text-white transition-all duration-500 text-sm py-4 ">
-                  
-                  <div className=" px-5 group hover:bg-khaki hover:text-white">
-                    <li className="hover:ml-3 duration-300  ">
-                      <NavLink to="/find_room" className="block py-2">
-                        Find Room
-                      </NavLink>
-                    </li>
-                  </div>
-                  <div className=" px-5 group hover:bg-khaki hover:text-white">
-                    <li className="hover:ml-3 duration-300  ">
-                      <NavLink to="/pricing" className="py-2 block">
-                        PACKAGES
-                      </NavLink>
-                    </li>
-                  </div>
-                  {/* <div className=" px-5 group hover:bg-khaki hover:text-white">
-                    <li className="hover:ml-3 duration-300  ">
-                      <NavLink to="/room_details" className="block py-2">
-                        Room Details
-                      </NavLink>
-                    </li>
-                  </div> */}
-                </ul>
-              </div>
-            </div>
+           <NavLink
+              className={`${({ isActive, isPending }) =>
+                isPending
+                  ? "pending"
+                  : isActive
+                  ? "active"
+                  : ""} text-lightBlack lg:text-white dark:text-white  lg:border-b-0 px-3 py-2 w-full block transition-all duration-300`}
+              to="/find_room"
+            >
+              Rooms
+            </NavLink>
             <NavLink
               className={`${({ isActive, isPending }) =>
                 isPending
@@ -352,11 +331,11 @@ const handleBookingClick = () => {
             <div className="ml-3">
               {isAuthenticated ? (
   <UserProfileDropdown size={20} />
-) : (
-  <Link to="/login" className="text-white">
+   ) : (
+   <Link to="/login" className="text-white">
     Login
-  </Link>
-)}
+   </Link>
+   )}
             </div>
           </div>
         </div>
