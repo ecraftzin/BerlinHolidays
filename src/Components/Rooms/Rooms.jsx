@@ -195,6 +195,7 @@ const Rooms = () => {
             </button>
           </Link>
         </div>
+        
       </div>
       {/* Rooms section heading */}
       <div className=" py-20 2xl:py-[120px] w-full bg-[url('/images/home-1/section-shape2.png')] bg-no-repeat bg-top bg-opacity-[0.07]">
@@ -228,6 +229,14 @@ const Rooms = () => {
             </p>
           </div>
           {/* Rooms Slider Container */}
+          <div className="flex justify-end">
+  <Link to="/find_room">
+    <button className="viewallrooms btn-primary">
+      View All Rooms
+    </button>
+  </Link>
+</div>
+
 
           <div className="relative">
             {loading ? (
