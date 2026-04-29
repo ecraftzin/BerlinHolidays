@@ -68,20 +68,20 @@ const Footer = () => {
                 <div>
                   <ul className="flex space-x-3">
                     <li className="hover-animBg group transition-all duration-300  rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
-                      <Link to="#" className="">
+                      <Link to="https://www.facebook.com/berlinholidaysresort" className="">
                         <FaFacebookF className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
                       </Link>
                     </li>
                     <li className="hover-animBg group transition-all duration-300 rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
-                      <Link to="#" className="">
+                      <Link to="https://www.instagram.com/berlinholidays/" className="">
                        <FaInstagram className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
                          </Link>
                      </li>
-                     <li className="hover-animBg group transition-all duration-300 rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
+                     {/* <li className="hover-animBg group transition-all duration-300 rounded-full border border-lightGray border-opacity-75 hover:border-khaki cursor-pointer w-[37px] h-[37px] grid items-center justify-center">
                       <Link to="#" className="">
                        <FaYoutube className="text-lightGray text-opacity-75 group-hover:text-white group-hover:text-slateBlue-0 w-4 h-4 " />
                          </Link>
-                     </li>
+                     </li> */}
                   </ul>
                 </div>
               </div>

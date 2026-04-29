@@ -96,6 +96,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Update customer profile
+  const updateCustomerProfile = async (updates) => {
+    try {
+      if (!user?.id) throw new Error("User not authenticated");
+
+      console.log('[AuthContext] Updating customer profile:', updates);
+      const { data, error } = await supabase
+        .from("customer_profiles")
+        .update(updates)
+        .eq("user_id", user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Update local state immediately
+      setCustomerProfile(data);
+      console.log('[AuthContext] Customer profile updated successfully:', data);
+      
+      return { data, error: null };
+    } catch (error) {
+      console.error("[AuthContext] Error updating customer profile:", error);
+      return { data: null, error };
+    }
+  };
+
   // Sign up new user
   const signUp = async (email, password, userData) => {
     try {
@@ -202,6 +228,7 @@ export const AuthProvider = ({ children }) => {
     signOut,
     getUserInitial,
     loadCustomerProfile,
+    updateCustomerProfile,
   };
 
   return (

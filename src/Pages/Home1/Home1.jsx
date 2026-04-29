@@ -17,7 +17,6 @@ const Home1 = () => {
       <HotelAndFacilities />
       <Action />
       <Facilities />
-      <Offers />
       <Testimonial />
       <LatestBlog />
     </>

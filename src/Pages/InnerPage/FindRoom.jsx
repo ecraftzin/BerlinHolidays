@@ -561,7 +561,10 @@ const FindRoom = () => {
                     Call Us Now
                   </p>
                   <p className="font-Garamond text-lg sm:text-xl md:text-[22px] leading-[26px] text-lightBlack dark:text-white font-medium">
-                    +980 123 (4567) 890
+                    +91 9061322062
+                  </p>
+                  <p className="font-Garamond text-lg sm:text-xl md:text-[22px] leading-[26px] text-lightBlack dark:text-white font-medium">
+                    +91 9061322063
                   </p>
                 </div>
               </div>
