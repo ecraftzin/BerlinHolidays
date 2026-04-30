@@ -107,9 +107,14 @@ export const AuthProvider = ({ children }) => {
         .update(updates)
         .eq("user_id", user.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+
+      // If profile was not found, return a clear error
+      if (!data) {
+        throw new Error("Profile not found for the current user.");
+      }
       
       // Update local state immediately
       setCustomerProfile(data);

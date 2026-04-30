@@ -34,7 +34,7 @@ export const createCustomerProfile = async (profileData) => {
       .from("customer_profiles")
       .insert([profileData])
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return { data, error: null };
@@ -52,7 +52,7 @@ export const updateCustomerProfile = async (userId, updates) => {
       .update(updates)
       .eq("user_id", userId)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return { data, error: null };
@@ -162,7 +162,7 @@ export const createBooking = async (bookingData) => {
       .from("bookings")
       .insert([bookingData])
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
     return { data, error: null };
