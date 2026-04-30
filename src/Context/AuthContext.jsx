@@ -102,24 +102,26 @@ export const AuthProvider = ({ children }) => {
       if (!user?.id) throw new Error("User not authenticated");
 
       console.log('[AuthContext] Updating customer profile:', updates);
+      const profilePayload = {
+        user_id: user.id,
+        email: user.email,
+        ...updates,
+      };
+
       const { data, error } = await supabase
         .from("customer_profiles")
-        .update(updates)
-        .eq("user_id", user.id)
+        .upsert(profilePayload, { onConflict: 'user_id' })
         .select()
         .maybeSingle();
 
       if (error) throw error;
-
-      // If profile was not found, return a clear error
       if (!data) {
-        throw new Error("Profile not found for the current user.");
+        throw new Error("Unable to save profile. Please try again.");
       }
-      
-      // Update local state immediately
+
       setCustomerProfile(data);
-      console.log('[AuthContext] Customer profile updated successfully:', data);
-      
+      console.log('[AuthContext] Customer profile upserted successfully:', data);
+
       return { data, error: null };
     } catch (error) {
       console.error("[AuthContext] Error updating customer profile:", error);

@@ -49,8 +49,7 @@ export const updateCustomerProfile = async (userId, updates) => {
   try {
     const { data, error } = await supabase
       .from("customer_profiles")
-      .update(updates)
-      .eq("user_id", userId)
+      .upsert({ user_id: userId, ...updates }, { onConflict: 'user_id' })
       .select()
       .maybeSingle();
 
